@@ -170,7 +170,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="font-mono text-[11px] font-bold tracking-[0.2em] text-olive uppercase"
+              className="font-mono text-[11px] font-bold tracking-[0.2em] text-ok uppercase"
             >
               Arrivati a {lesson.city}
             </motion.p>
@@ -214,7 +214,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
                       {v.it}
                     </span>
                     {v.es && (
-                      <span className="block text-[13px] text-sea italic" lang="es">
+                      <span className="block text-[13px] text-bridge italic" lang="es">
                         {v.es}
                       </span>
                     )}

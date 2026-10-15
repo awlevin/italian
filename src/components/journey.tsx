@@ -11,7 +11,6 @@ import { IconArrowRight, IconCheck, IconRepeat, IconTrain } from "./ui/icons";
 import { SplitFlap } from "./ui/split-flap";
 
 const MotionLink = motion.create(Link);
-const BOARD_INK = "#f6efe3";
 
 export function Journey() {
   const progress = useProgress();
@@ -39,7 +38,7 @@ export function Journey() {
   return (
     <div className="space-y-7 pt-2">
       <section className="space-y-3">
-        <Board lesson={current} index={currentIdx} allDone={allDone} ready={ready} step={inProgress ? cur.stepIndex : null} />
+        <Board lesson={current} index={allDone ? course.length - 1 : currentIdx} allDone={allDone} ready={ready} step={inProgress ? cur.stepIndex : null} />
         <ButtonLink href={cta.href} size="lg" block>
           {cta.label}
           <IconArrowRight size={20} />
@@ -102,15 +101,15 @@ function Board({
   const pct = step != null ? Math.min(1, step / lesson.steps.length) : 0;
   return (
     <div
-      className="relative overflow-hidden rounded-[22px] bg-[#14100c] p-4 shadow-lift ring-1 ring-black/5 dark:ring-white/10"
-      style={{ color: BOARD_INK }}
+      className="relative overflow-hidden rounded-[22px] bg-board p-4 shadow-lift ring-1 ring-black/5 dark:ring-white/10"
+      style={{ color: "var(--board-ink)" }}
     >
       {/* A faint top sheen so the board reads as a lit panel, not a hole. */}
       <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
       <div className="mb-3 flex items-center justify-between font-mono text-[10px] font-bold tracking-[0.2em] opacity-55">
         <span>{allDone ? "CAPOLINEA · LAST STOP" : "PROSSIMA FERMATA · NEXT STOP"}</span>
         <span className="flex items-center gap-1.5">
-          <span className="size-1.5 animate-pulse rounded-full bg-[#f2c94c]" />
+          <span className="size-1.5 animate-pulse rounded-full bg-board-signal" />
           {String(index + 1).padStart(2, "0")}/{course.length}
         </span>
       </div>
@@ -123,7 +122,7 @@ function Board({
         <div className="mt-4 flex items-center gap-3">
           <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/12">
             <motion.div
-              className="h-full rounded-full bg-[#f2c94c]"
+              className="h-full rounded-full bg-board-signal"
               initial={{ width: 0 }}
               animate={{ width: `${pct * 100}%` }}
               transition={{ type: "spring", stiffness: 90, damping: 20, delay: 0.5 }}
@@ -189,7 +188,7 @@ function Station({
   const fill = (on: boolean, delay: number) =>
     on && (
       <motion.span
-        className="absolute inset-0 origin-top bg-olive"
+        className="absolute inset-0 origin-top bg-ok"
         initial={{ scaleY: 0 }}
         animate={{ scaleY: 1 }}
         transition={{ duration: 0.22, delay, ease: "linear" }}
@@ -209,7 +208,7 @@ function Station({
 
       <span aria-hidden className="absolute top-1/2 left-4 z-10 grid -translate-x-1/2 -translate-y-1/2 place-items-center">
         {state === "done" ? (
-          <span className="grid size-6 place-items-center rounded-full bg-olive text-card ring-4 ring-paper">
+          <span className="grid size-6 place-items-center rounded-full bg-ok text-card ring-4 ring-paper">
             <IconCheck size={14} strokeWidth={3.2} />
           </span>
         ) : state === "current" ? (
@@ -241,7 +240,7 @@ function Station({
               {l.city}
             </span>
             {state === "done" && accuracy != null && (
-              <span className="font-mono text-[11px] font-bold text-olive tabular-nums">{Math.round(accuracy * 100)}%</span>
+              <span className="font-mono text-[11px] font-bold text-ok tabular-nums">{Math.round(accuracy * 100)}%</span>
             )}
             {state !== "done" && step > 0 && (
               <span className="font-mono text-[11px] font-bold text-accent tabular-nums">

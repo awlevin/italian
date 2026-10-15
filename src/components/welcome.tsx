@@ -48,7 +48,7 @@ export function Welcome() {
       <div className="flex flex-1 flex-col justify-center gap-5 pt-4 pb-2 sm:gap-8 sm:py-8">
         <div className="space-y-2">
           <p className="font-mono text-[10px] font-bold tracking-[0.22em] text-ink-3">PARTENZE · DEPARTURES</p>
-          <div className="relative overflow-hidden rounded-[20px] bg-[#14100c] px-3 py-3.5 shadow-lift ring-1 ring-black/5 dark:ring-white/10">
+          <div className="relative overflow-hidden rounded-[20px] bg-board px-3 py-3.5 shadow-lift ring-1 ring-black/5 dark:ring-white/10">
             <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
             <SplitFlap text="BENVENUTO" size="lg" className="justify-center" />
           </div>

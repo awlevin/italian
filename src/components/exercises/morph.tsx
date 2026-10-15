@@ -35,7 +35,7 @@ export function MorphWord({
   return (
     <span
       className={`inline-flex font-display leading-none tracking-[-0.01em] whitespace-pre transition-colors duration-500 ${className} ${
-        spanish ? "text-sea italic" : "text-ink"
+        spanish ? "text-bridge italic" : "text-ink"
       }`}
       lang={spanish ? "es" : "it"}
       aria-label={spanish ? es : it}
@@ -77,7 +77,7 @@ export function MorphWord({
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.22, ease: "easeOut" }}
                   className={`absolute inset-x-0 origin-left rounded-full ${
-                    accent ? "-bottom-[0.06em] h-[3px] bg-lemon" : "top-[52%] h-[2px] bg-wrong"
+                    accent ? "-bottom-[0.06em] h-[3px] bg-mark" : "top-[52%] h-[2px] bg-wrong"
                   }`}
                 />
               )}
@@ -162,7 +162,7 @@ function MorphRow({
               aria-hidden={phase !== "it"}
             >
               <span className="text-ink-3">·</span>
-              <span className="font-display text-sea italic" lang="es">
+              <span className="font-display text-bridge italic" lang="es">
                 {pair.es}
               </span>
             </motion.span>
@@ -191,7 +191,7 @@ export function Morph({ step }: { step: MorphStep }) {
   return (
     <div className="space-y-5">
       <div className="space-y-2.5">
-        <p className="font-mono text-[11px] font-bold tracking-[0.16em] text-sea uppercase">Il ponte · sound rule</p>
+        <p className="font-mono text-[11px] font-bold tracking-[0.16em] text-bridge uppercase">Il ponte · sound rule</p>
         <h2 className="font-display text-[30px] leading-[1.1] tracking-[-0.02em] text-ink text-balance">
           <Rich text={step.title} speakable={false} />
         </h2>
@@ -217,9 +217,9 @@ export function Morph({ step }: { step: MorphStep }) {
               initial={{ opacity: 0, y: 8, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ type: "spring", stiffness: 420, damping: 22, delay: 0.25 }}
-              className="inline-flex items-center gap-2 rounded-full bg-olive-soft py-1.5 pr-3.5 pl-1.5 text-[14px] font-semibold text-olive"
+              className="inline-flex items-center gap-2 rounded-full bg-ok-soft py-1.5 pr-3.5 pl-1.5 text-[14px] font-semibold text-ok"
             >
-              <span className="grid size-6 place-items-center rounded-full bg-olive text-card">
+              <span className="grid size-6 place-items-center rounded-full bg-ok text-card">
                 <IconCheck size={14} strokeWidth={3} />
               </span>
               +{total} words you already knew

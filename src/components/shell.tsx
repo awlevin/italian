@@ -35,12 +35,12 @@ function useCalmStatus(status: SyncStatus): SyncStatus {
 
 const BADGE: Partial<Record<SyncStatus, { label: string; title: string; Icon: typeof IconCloud; tone: string }>> = {
   saving: { label: "Saving", title: "Saving your progress", Icon: IconCloud, tone: "text-ink-3" },
-  saved: { label: "Saved", title: "Your progress is saved", Icon: IconCloudCheck, tone: "text-olive" },
+  saved: { label: "Saved", title: "Your progress is saved", Icon: IconCloudCheck, tone: "text-ok" },
   offline: {
     label: "Offline · saved on device",
     title: "No connection. Progress is kept on this phone and syncs when you are back online.",
     Icon: IconCloudOff,
-    tone: "bg-lemon-soft text-ink-2",
+    tone: "bg-mark-soft text-ink-2",
   },
   error: {
     label: "Saved on device",

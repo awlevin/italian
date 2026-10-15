@@ -56,7 +56,7 @@ export function Footer({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
-            className={`absolute inset-x-0 bottom-0 rounded-t-[28px] ${ok ? "bg-olive-soft" : "bg-wrong-soft"}`}
+            className={`absolute inset-x-0 bottom-0 rounded-t-[28px] ${ok ? "bg-ok-soft" : "bg-wrong-soft"}`}
           >
             <div className="mx-auto max-w-xl px-5 pt-5 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
               <div className="flex items-start gap-3">
@@ -64,12 +64,12 @@ export function Footer({
                   initial={{ scale: 0, rotate: -30 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 500, damping: 18, delay: 0.08 }}
-                  className={`grid size-9 shrink-0 place-items-center rounded-full ${ok ? "bg-olive" : "bg-wrong"} text-card`}
+                  className={`grid size-9 shrink-0 place-items-center rounded-full ${ok ? "bg-ok" : "bg-wrong"} text-card`}
                 >
                   {ok ? <IconCheck size={20} strokeWidth={3} /> : <IconX size={20} strokeWidth={3} />}
                 </motion.span>
                 <div className="min-w-0 flex-1 space-y-1">
-                  <p className={`font-display text-[24px] leading-tight ${ok ? "text-olive" : "text-wrong"}`}>{word}</p>
+                  <p className={`font-display text-[24px] leading-tight ${ok ? "text-ok" : "text-wrong"}`}>{word}</p>
                   {!ok && verdict?.answer && (
                     <p className="text-[16px] text-ink">
                       <span className="text-ink-2">Answer: </span>
@@ -106,7 +106,7 @@ export function Footer({
               <Button
                 size="lg"
                 block
-                variant={phase === "correct" ? "olive" : phase === "wrong" ? "wrong" : "primary"}
+                variant={phase === "correct" ? "ok" : phase === "wrong" ? "wrong" : "primary"}
                 onClick={primary.onClick}
                 disabled={primary.disabled}
               >

@@ -4,14 +4,14 @@ import { motion, type HTMLMotionProps } from "motion/react";
 import Link from "next/link";
 import { forwardRef, type ComponentProps } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "olive" | "wrong";
+type Variant = "primary" | "secondary" | "ghost" | "ok" | "wrong";
 type Size = "md" | "lg";
 
 const variants: Record<Variant, string> = {
   primary:
     "bg-accent text-accent-ink shadow-[0_3px_0_var(--accent-press)] active:shadow-[0_0_0_var(--accent-press)] active:translate-y-[3px]",
-  olive:
-    "bg-olive text-card shadow-[0_3px_0_color-mix(in_oklab,var(--olive),black_25%)] active:shadow-none active:translate-y-[3px]",
+  ok:
+    "bg-ok text-card shadow-[0_3px_0_color-mix(in_oklab,var(--ok),black_25%)] active:shadow-none active:translate-y-[3px]",
   wrong:
     "bg-wrong text-card shadow-[0_3px_0_color-mix(in_oklab,var(--wrong),black_25%)] active:shadow-none active:translate-y-[3px]",
   secondary:

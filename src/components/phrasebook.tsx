@@ -32,7 +32,7 @@ function Row({ p, starred, onShow }: { p: Phrase; starred: boolean; onShow: (p: 
         <div className="min-w-0 flex-1">
           <p lang="it" className="text-[17px] leading-snug font-semibold text-ink">
             {p.it}
-            {starred && <IconStar size={13} filled className="ml-1.5 inline -translate-y-px text-lemon" />}
+            {starred && <IconStar size={13} filled className="ml-1.5 inline -translate-y-px text-mark" />}
           </p>
           <p className="text-[14px] leading-snug text-ink-2">{p.en}</p>
         </div>
@@ -62,7 +62,7 @@ function Row({ p, starred, onShow }: { p: Phrase; starred: boolean; onShow: (p: 
                   aria-pressed={starred}
                   onClick={() => dispatch({ t: "star", phraseId: p.id, on: !starred })}
                   className={`flex h-11 items-center gap-1.5 rounded-full border px-4 text-[14px] font-semibold transition-colors ${
-                    starred ? "border-lemon bg-lemon-soft text-ink" : "border-line bg-card text-ink-2 hover:text-ink"
+                    starred ? "border-mark bg-mark-soft text-ink" : "border-line bg-card text-ink-2 hover:text-ink"
                   }`}
                 >
                   <motion.span
@@ -71,7 +71,7 @@ function Row({ p, starred, onShow }: { p: Phrase; starred: boolean; onShow: (p: 
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ type: "spring", stiffness: 500, damping: 14 }}
                   >
-                    <IconStar size={16} filled={starred} className={starred ? "text-lemon" : ""} />
+                    <IconStar size={16} filled={starred} className={starred ? "text-mark" : ""} />
                   </motion.span>
                   {starred ? "Saved" : "Save"}
                 </motion.button>
@@ -364,7 +364,7 @@ export function Phrasebook() {
                   ) : (
                     <span className="absolute inset-0 rounded-full border border-line bg-card" />
                   )}
-                  {g.id === "saved" && <IconStar size={13} filled className="relative text-lemon" />}
+                  {g.id === "saved" && <IconStar size={13} filled className="relative text-mark" />}
                   <span className="relative">{g.it}</span>
                 </button>
               );

@@ -37,7 +37,7 @@ export function Correction({ attempt, answer }: { attempt: string; answer: strin
           initial={{ opacity: 0, x: -6 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="font-semibold text-olive"
+          className="font-semibold text-ok"
         >
           {answer}
         </motion.span>
@@ -73,7 +73,7 @@ export function Correction({ attempt, answer }: { attempt: string; answer: strin
             initial={{ opacity: 0, y: -10, scale: 0.6 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 520, damping: 22, delay }}
-            className="inline-block font-semibold text-olive underline decoration-olive/40 decoration-2 underline-offset-[5px]"
+            className="inline-block font-semibold text-ok underline decoration-ok/40 decoration-2 underline-offset-[5px]"
           >
             {t.ch === " " ? " " : t.ch}
           </motion.span>
@@ -149,8 +149,8 @@ export function TypeAnswer({ step, phase, setGrader }: ExerciseProps<TypeStep>) 
         <motion.div
           animate={phase === "wrong" ? { x: [0, -8, 8, -5, 5, 0] } : { x: 0 }}
           transition={{ duration: 0.4 }}
-          className={`relative flex items-center gap-3 rounded-2xl border-2 bg-card px-4 transition-colors focus-within:border-sea ${
-            phase === "correct" ? "border-olive" : phase === "wrong" ? "border-wrong" : "border-line"
+          className={`relative flex items-center gap-3 rounded-2xl border-2 bg-card px-4 transition-colors focus-within:border-bridge ${
+            phase === "correct" ? "border-ok" : phase === "wrong" ? "border-wrong" : "border-line"
           }`}
         >
           <input
@@ -216,7 +216,7 @@ export function TypeAnswer({ step, phase, setGrader }: ExerciseProps<TypeStep>) 
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <p className="flex items-center gap-2 rounded-xl bg-lemon-soft px-3 py-2 text-[15px] text-ink-2">
+              <p className="flex items-center gap-2 rounded-xl bg-mark-soft px-3 py-2 text-[15px] text-ink-2">
                 <IconLightbulb size={16} className="shrink-0 text-ink-3" />
                 <span>
                   <Rich text={step.hint} />

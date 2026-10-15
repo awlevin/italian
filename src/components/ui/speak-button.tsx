@@ -57,12 +57,12 @@ export function SpeakButton({
       className={`relative inline-grid shrink-0 place-items-center rounded-full ${
         size === "lg"
           ? "bg-accent text-accent-ink shadow-[0_4px_0_var(--accent-press)] active:translate-y-[4px] active:shadow-none"
-          : "bg-sea-soft text-sea"
+          : "bg-accent-soft text-accent"
       } ${dims} ${className}`}
     >
       {playing && (
         <motion.span
-          className={`absolute inset-0 rounded-full ${size === "lg" ? "bg-accent" : "bg-sea"}`}
+          className="absolute inset-0 rounded-full bg-accent"
           initial={{ opacity: 0.35, scale: 1 }}
           animate={{ opacity: 0, scale: 1.6 }}
           transition={{ duration: 1.1, repeat: Infinity, ease: "easeOut" }}

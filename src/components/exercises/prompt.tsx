@@ -41,7 +41,7 @@ export function Sentence({
         <>
           <span
             className={`mx-1 inline-flex min-w-[3.2ch] items-baseline justify-center gap-1.5 border-b-[3px] px-1 transition-colors duration-300 ${
-              answered ? "border-olive" : "border-ink-3/60"
+              answered ? "border-ok" : "border-ink-3/60"
             }`}
           >
             {answered && struck && (
@@ -60,7 +60,7 @@ export function Sentence({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, transition: { duration: 0.08 } }}
                 transition={{ type: "spring", stiffness: 520, damping: 24, delay: struck ? 0.12 : 0 }}
-                className={`inline-block ${answered ? "text-olive" : "text-ink-3"}`}
+                className={`inline-block ${answered ? "text-ok" : "text-ink-3"}`}
               >
                 {fill ?? " "}
               </motion.span>

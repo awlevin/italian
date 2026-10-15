@@ -29,7 +29,7 @@ function Cell({ target, delay }: { target: string; delay: number }) {
 
   return (
     <span
-      className="relative inline-grid shrink-0 place-items-center overflow-hidden bg-[#1c1712] font-mono font-bold text-[#f6efe3] shadow-[inset_0_-1px_0_rgb(255_255_255/0.06),0_1px_0_rgb(0_0_0/0.4)] [perspective:200px]"
+      className="relative inline-grid shrink-0 place-items-center overflow-hidden bg-board-flap font-mono font-bold text-board-ink shadow-[inset_0_-1px_0_rgb(255_255_255/0.06),0_1px_0_rgb(0_0_0/0.4)] [perspective:200px]"
       style={{
         width: "var(--flap-w)",
         height: "calc(var(--flap-w) * 1.44)",

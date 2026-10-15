@@ -64,7 +64,7 @@ export function OptionList({
             aria-keyshortcuts={String(i + 1)}
             className={`group flex min-h-14 items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left text-[17px] transition-colors ${
               state === "right"
-                ? "border-olive bg-olive-soft text-ink"
+                ? "border-ok bg-ok-soft text-ink"
                 : state === "wrong"
                   ? "border-wrong bg-wrong-soft text-ink"
                   : "border-line bg-card text-ink hover:border-ink-3/50"
@@ -73,7 +73,7 @@ export function OptionList({
             <span
               className={`grid size-7 shrink-0 place-items-center rounded-lg font-mono text-[12px] font-bold transition-colors ${
                 state === "right"
-                  ? "bg-olive text-card"
+                  ? "bg-ok text-card"
                   : state === "wrong"
                     ? "bg-wrong text-card"
                     : "bg-paper-2 text-ink-3 group-hover:text-ink-2"

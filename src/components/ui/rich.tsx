@@ -6,7 +6,7 @@ import { MARKUP, sayable } from "@/lib/text";
 
 /**
  * Renders inline markup: «Italian» (tap to hear), ‹Spanish›, ~~wrong~~, **bold**.
- * Italian spans read as highlighted ink; Spanish reads as sea-blue italics.
+ * Italian spans read as highlighted ink; Spanish reads as plum italics.
  */
 export function Rich({ text, speakable = true }: { text: string; speakable?: boolean }) {
   const parts = text.split(MARKUP);
@@ -37,7 +37,7 @@ export function Rich({ text, speakable = true }: { text: string; speakable?: boo
         }
         if (p.startsWith("‹"))
           return (
-            <span key={i} className="font-medium italic text-sea" lang="es">
+            <span key={i} className="font-medium italic text-bridge" lang="es">
               {p.slice(1, -1)}
             </span>
           );

@@ -23,7 +23,7 @@ export function ExampleRow({ ex, i = 0 }: { ex: Example; i?: number }) {
         <p className="mt-0.5 text-[14px] leading-snug text-ink-2">
           {ex.en}
           {ex.es && (
-            <span className="text-sea">
+            <span className="text-bridge">
               {" "}
               · <span className="italic">{ex.es}</span>
             </span>
@@ -78,10 +78,10 @@ export function DataTable({ table }: { table: TableT }) {
 
 export function Tip({ text }: { text: string }) {
   return (
-    <div className="flex gap-3 rounded-2xl bg-sea-soft px-4 py-3 text-[15px] leading-snug text-ink">
-      <IconBridge size={20} className="mt-0.5 shrink-0 text-sea" />
+    <div className="flex gap-3 rounded-2xl bg-bridge-soft px-4 py-3 text-[15px] leading-snug text-ink">
+      <IconBridge size={20} className="mt-0.5 shrink-0 text-bridge" />
       <p>
-        <span className="font-semibold text-sea">From Spanish: </span>
+        <span className="font-semibold text-bridge">From Spanish: </span>
         <Rich text={text} />
       </p>
     </div>

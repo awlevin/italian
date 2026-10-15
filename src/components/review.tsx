@@ -121,7 +121,7 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
         ) : seen.length > 0 ? (
           <>
             <div className="flex items-center gap-4">
-              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-olive-soft text-olive">
+              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-ok-soft text-ok">
                 <IconCheck size={28} strokeWidth={2.6} />
               </div>
               <div>
@@ -192,12 +192,12 @@ function ResultCard({ result }: { result: SessionResult }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.35, ease: EASE }}
-      className="flex items-center gap-4 rounded-[22px] bg-olive-soft p-4 pr-5"
+      className="flex items-center gap-4 rounded-[22px] bg-ok-soft p-4 pr-5"
       role="status"
     >
       <div className="relative grid size-16 shrink-0 place-items-center">
         <svg viewBox="0 0 52 52" className="absolute inset-0 -rotate-90" aria-hidden>
-          <circle cx="26" cy="26" r={r} fill="none" stroke="currentColor" strokeWidth="4" className="text-olive/20" />
+          <circle cx="26" cy="26" r={r} fill="none" stroke="currentColor" strokeWidth="4" className="text-ok/20" />
           <motion.circle
             cx="26"
             cy="26"
@@ -206,14 +206,14 @@ function ResultCard({ result }: { result: SessionResult }) {
             stroke="currentColor"
             strokeWidth="4"
             strokeLinecap="round"
-            className="text-olive"
+            className="text-ok"
             strokeDasharray={c}
             initial={{ strokeDashoffset: c }}
             animate={{ strokeDashoffset: c * (1 - pct) }}
             transition={{ duration: 0.9, delay: 0.2, ease: EASE }}
           />
         </svg>
-        <span className="font-mono text-[13px] font-bold text-olive tabular-nums">
+        <span className="font-mono text-[13px] font-bold text-ok tabular-nums">
           {result.firstTryCorrect}/{result.exercises}
         </span>
       </div>

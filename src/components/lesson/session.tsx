@@ -272,7 +272,7 @@ export function Session({
             {(item.label || retry) && (
               <div className="mb-3 flex flex-wrap gap-1.5">
                 {retry && (
-                  <p className="inline-flex items-center gap-1.5 rounded-full bg-lemon-soft px-2.5 py-1 font-mono text-[10.5px] font-bold tracking-[0.14em] text-ink-2 uppercase">
+                  <p className="inline-flex items-center gap-1.5 rounded-full bg-mark-soft px-2.5 py-1 font-mono text-[10.5px] font-bold tracking-[0.14em] text-ink-2 uppercase">
                     <IconRepeat size={12} strokeWidth={2.5} /> Again
                   </p>
                 )}

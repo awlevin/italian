@@ -68,8 +68,8 @@ export function Rail({ value, jolt = 0, from }: { value: number; jolt?: number; 
           className="grid h-6 w-8 place-items-center rounded-[8px_12px_6px_6px] bg-ink shadow-[0_2px_0_rgb(0_0_0/0.15)]"
         >
           <span className="flex gap-[3px]">
-            <span className="size-[5px] rounded-[1.5px] bg-lemon dark:bg-accent" />
-            <span className="size-[5px] rounded-[1.5px] bg-lemon dark:bg-accent" />
+            <span className="size-[5px] rounded-[1.5px] bg-mark dark:bg-accent" />
+            <span className="size-[5px] rounded-[1.5px] bg-mark dark:bg-accent" />
           </span>
         </motion.div>
       </motion.div>

@@ -66,7 +66,7 @@ export function Build({ step, phase, setGrader }: ExerciseProps<BuildStep>) {
         <div className="space-y-3" data-reveal>
           <div
             className={`relative min-h-[7.75rem] rounded-2xl border-2 border-dashed p-3 transition-colors ${
-              phase === "correct" ? "border-olive bg-olive-soft/50" : phase === "wrong" ? "border-wrong bg-wrong-soft/40" : "border-line"
+              phase === "correct" ? "border-ok bg-ok-soft/50" : phase === "wrong" ? "border-wrong bg-wrong-soft/40" : "border-line"
             }`}
           >
             <div aria-hidden className="pointer-events-none absolute inset-x-3 top-3 bottom-0" style={{ backgroundImage: RULES }} />
@@ -86,7 +86,7 @@ export function Build({ step, phase, setGrader }: ExerciseProps<BuildStep>) {
                     transition={spring}
                     className={`${tileBase} ${
                       phase === "correct"
-                        ? "border-olive/50 bg-card shadow-[0_3px_0_color-mix(in_oklab,var(--olive),transparent_60%)]"
+                        ? "border-ok/50 bg-card shadow-[0_3px_0_color-mix(in_oklab,var(--ok),transparent_60%)]"
                         : off
                           ? "border-wrong bg-wrong-soft text-wrong shadow-[0_3px_0_color-mix(in_oklab,var(--wrong),transparent_60%)]"
                           : tileIdle

@@ -77,11 +77,11 @@ export function Match({ step, submit, phase }: ExerciseProps<MatchStep>) {
         transition={{ type: "spring", stiffness: 500, damping: 28 }}
         className={`flex min-h-14 w-full items-center justify-center rounded-2xl border-2 px-3 py-2.5 text-center text-[16px] leading-tight transition-[background-color,border-color,box-shadow] duration-200 ${
           isDone
-            ? "border-olive/60 bg-olive-soft text-ink"
+            ? "border-ok/60 bg-ok-soft text-ink"
             : isMiss
               ? "border-wrong bg-wrong-soft text-ink"
               : isSel
-                ? "border-sea bg-sea-soft text-ink shadow-[0_3px_0_color-mix(in_oklab,var(--sea),transparent_55%)]"
+                ? "border-bridge bg-bridge-soft text-ink shadow-[0_3px_0_color-mix(in_oklab,var(--bridge),transparent_55%)]"
                 : "border-line bg-card text-ink shadow-[0_2px_0_var(--line)]"
         } ${side === "it" ? "font-semibold" : ""}`}
       >
