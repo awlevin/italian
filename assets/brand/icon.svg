@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="lapis" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f4093"/>
+      <stop offset="1" stop-color="#1b2562"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2d074"/>
+      <stop offset="1" stop-color="#cf9f34"/>
+    </linearGradient>
+  </defs>
+  <rect id="tile" width="512" height="512" rx="112" fill="url(#lapis)"/>
+  <g id="mark">
+    <path d="M380 76l11 33 33 11-33 11-11 33-11-33-33-11 33-11z" fill="#e2b84b"/>
+    <path d="M40 318C150 180 362 180 472 318V384H364A108 92 0 0 0 148 384H40Z" fill="url(#gold)"/>
+    <path d="M72 436q36-17 73 0t73 0 73 0 73 0 73 0" fill="none" stroke="#7f92dc" stroke-width="18" stroke-linecap="round" opacity=".7"/>
+  </g>
+</svg>

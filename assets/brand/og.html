@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ponte — Open Graph 1200×630</title>
+    <link rel="stylesheet" href="brand.css" />
+    <style>
+      #frame {
+        width: 1200px;
+        height: 630px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 40px;
+        padding: 0 104px 0 96px;
+      }
+
+      /* A lapis glow behind the word pair. */
+      #frame::after {
+        content: "";
+        position: absolute;
+        right: -160px;
+        top: -100px;
+        width: 760px;
+        height: 830px;
+        background: radial-gradient(closest-side, rgb(47 64 147 / 0.32), transparent);
+        pointer-events: none;
+      }
+
+      .lockup {
+        position: relative;
+        z-index: 1;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .brand img {
+        width: 68px;
+        height: 68px;
+      }
+      .brand .wordmark {
+        font-size: 64px;
+      }
+      .lockup h1 {
+        margin-top: 64px;
+        font-size: 112px;
+        font-weight: 400;
+      }
+      .lockup p {
+        margin-top: 22px;
+        font-size: 38px;
+        color: var(--ink-2);
+      }
+
+      .pair {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        justify-items: start;
+        gap: 6px;
+      }
+      .pair .es,
+      .pair .it {
+        font-size: 104px;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+      }
+      .pair .arrow {
+        margin-left: 10px;
+        font-size: 40px;
+        color: var(--ink-3);
+      }
+      .pair small {
+        margin-top: 10px;
+        font-size: 15px;
+        color: var(--ink-3);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="frame" class="vault grain">
+      <div class="lockup">
+        <div class="brand">
+          <img src="icon.svg" alt="" />
+          <span class="wordmark">Ponte</span>
+        </div>
+        <h1 class="display">Learn Italian</h1>
+        <p class="display">for Spanish speakers</p>
+      </div>
+
+      <div class="pair">
+        <span class="es">no<span class="drop">ch</span>e</span>
+        <span class="arrow">↓</span>
+        <span class="it">no<span class="add">tt</span>e</span>
+        <small class="eyebrow">night</small>
+      </div>
+    </div>
+  </body>
+</html>

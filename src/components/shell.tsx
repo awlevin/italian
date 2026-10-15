@@ -1,6 +1,6 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -165,6 +165,7 @@ function TabBar() {
 }
 
 export function Shell({ children }: { children: React.ReactNode }) {
+  const hasPhoto = useUser().user?.hasImage ?? false;
   return (
     <div className="relative z-10 min-h-dvh">
       {/* Home-screen app: content scrolling under the status bar gets a paper backdrop. */}
@@ -176,7 +177,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="flex min-w-0 items-center gap-2">
           <SyncBadge />
           <span className="grid size-9 shrink-0 place-items-center">
-            <UserButton appearance={{ elements: { avatarBox: "size-9 ring-2 ring-line", userButtonTrigger: "rounded-full" } }} />
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "size-9 ring-2 ring-line bg-accent",
+                  // Clerk's stock gradient avatar fights the palette: tint it to the accent.
+                  avatarImage: hasPhoto ? "" : "mix-blend-luminosity opacity-70",
+                  userButtonTrigger: "rounded-full",
+                },
+              }}
+            />
           </span>
         </div>
       </header>

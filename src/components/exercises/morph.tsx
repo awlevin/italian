@@ -54,7 +54,7 @@ export function MorphWord({
               exit={{ opacity: 0, y: 12, scale: 0.6, filter: "blur(2px)" }}
               transition={spring}
               className={`relative inline-block transition-colors duration-300 ${
-                t.type === "ins" ? "text-accent" : marked ? (accent ? "text-ink" : "text-wrong") : ""
+                t.type === "ins" ? "text-mark" : marked ? (accent ? "text-ink" : "text-wrong") : ""
               }`}
               aria-hidden
             >
@@ -77,7 +77,7 @@ export function MorphWord({
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.22, ease: "easeOut" }}
                   className={`absolute inset-x-0 origin-left rounded-full ${
-                    accent ? "-bottom-[0.06em] h-[3px] bg-mark" : "top-[52%] h-[2px] bg-wrong"
+                    accent ? "-bottom-[0.06em] h-[3px] bg-mark" : "-bottom-[0.06em] h-[3px] bg-wrong"
                   }`}
                 />
               )}

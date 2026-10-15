@@ -25,6 +25,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.APP_URL ?? "https://italian.aaronideas.com"),
   title: { default: "Ponte — Learn Italian", template: "%s · Ponte" },
   description: "Learn Italian.",
   applicationName: "Ponte",

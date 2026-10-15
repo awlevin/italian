@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ponte — banner 1280×640</title>
+    <link rel="stylesheet" href="brand.css" />
+    <style>
+      #frame {
+        width: 1280px;
+        height: 640px;
+        display: grid;
+        grid-template-columns: 1fr 480px;
+        align-items: center;
+        gap: 56px;
+        padding: 0 88px 0 96px;
+      }
+
+      /* A soft lapis wash behind the card, so it sits in light, not on a void. */
+      #frame::after {
+        content: "";
+        position: absolute;
+        right: -120px;
+        top: -80px;
+        width: 760px;
+        height: 800px;
+        background: radial-gradient(closest-side, rgb(38 52 120 / 0.09), transparent);
+        pointer-events: none;
+      }
+
+      .lockup {
+        position: relative;
+        z-index: 1;
+      }
+      .lockup img {
+        display: block;
+        width: 84px;
+        height: 84px;
+        margin-bottom: 34px;
+        filter: drop-shadow(0 14px 22px rgb(var(--shadow) / 0.22));
+      }
+      .lockup h1 {
+        font-size: 168px;
+        margin-left: -6px;
+      }
+      .lockup .tag {
+        margin-top: 26px;
+        font-size: 46px;
+        color: var(--ink);
+      }
+      .lockup .tag span {
+        color: var(--ink-2);
+      }
+      .chips {
+        display: flex;
+        gap: 10px;
+        margin-top: 34px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        height: 40px;
+        padding: 0 17px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .chip i {
+        width: 8px;
+        height: 8px;
+        border-radius: 99px;
+        background: var(--c);
+      }
+
+      .card {
+        position: relative;
+        z-index: 1;
+        padding: 34px 38px 22px;
+      }
+      .card .eyebrow {
+        font-size: 13px;
+        color: var(--bridge);
+      }
+      .card h2 {
+        margin-top: 12px;
+        font-family: var(--display);
+        font-weight: 400;
+        font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 72;
+        font-size: 33px;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+      .card ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 18px;
+      }
+      .card li {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: baseline;
+        gap: 18px;
+        padding: 15px 0 13px;
+        border-top: 1px solid var(--line);
+      }
+      .card li .es,
+      .card li .it {
+        font-size: 44px;
+        line-height: 1;
+        letter-spacing: -0.01em;
+      }
+      .card li .arrow {
+        color: var(--ink-3);
+        font-size: 24px;
+        transform: translateY(-4px);
+      }
+      .card li small {
+        grid-column: 1 / -1;
+        margin-top: -6px;
+        font-size: 15px;
+        color: var(--ink-3);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="frame" class="grain">
+      <div class="lockup">
+        <img src="icon.svg" alt="" />
+        <h1 class="wordmark">Ponte</h1>
+        <p class="tag display">Learn Italian<br /><span>for Spanish speakers</span></p>
+        <div class="chips">
+          <span class="chip" style="--c: var(--bridge)"><i></i>Sound rules</span>
+          <span class="chip" style="--c: var(--accent)"><i></i>Grammar that differs</span>
+          <span class="chip" style="--c: var(--mark)"><i></i>Travel phrases</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Il ponte · sound rule</p>
+        <h2>Spanish <em class="es">ch</em> and <em class="es">ct</em> go double</h2>
+        <ul>
+          <li>
+            <span class="es">no<span class="drop">ch</span>e</span><span class="arrow">→</span
+            ><span class="it">no<span class="add">tt</span>e</span>
+            <small>night</small>
+          </li>
+          <li>
+            <span class="es">l<span class="drop">ech</span>e</span><span class="arrow">→</span
+            ><span class="it">l<span class="add">att</span>e</span>
+            <small>milk</small>
+          </li>
+          <li>
+            <span class="es">o<span class="drop">ch</span>o</span><span class="arrow">→</span
+            ><span class="it">o<span class="add">tt</span>o</span>
+            <small>eight</small>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
