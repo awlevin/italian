@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
@@ -61,9 +61,9 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   );
 
   return (
-    <AnimatePresence mode="wait">
+    <>
       {stage === "run" ? (
-        <motion.div key="run" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div key="run" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <Session
             items={items}
             startAt={startAt}
@@ -77,7 +77,6 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           key="intro"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, y: -12 }}
           className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col px-5 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
         >
           <Link href="/" className="-ml-2 inline-flex w-fit items-center gap-1.5 rounded-full px-2 py-2 text-[14px] font-medium text-ink-3 hover:text-ink">
@@ -223,6 +222,6 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           </motion.div>
         </motion.main>
       )}
-    </AnimatePresence>
+    </>
   );
 }

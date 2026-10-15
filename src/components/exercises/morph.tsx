@@ -37,7 +37,7 @@ export function MorphWord({ es, it, phase }: { es: string; it: string; phase: "e
             }`}
             aria-hidden
           >
-            {t.ch}
+            {phase === "es" && t.src ? t.src : t.ch}
           </motion.span>
         ))}
       </AnimatePresence>
