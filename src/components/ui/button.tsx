@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, type HTMLMotionProps } from "motion/react";
-import { forwardRef } from "react";
+import Link from "next/link";
+import { forwardRef, type ComponentProps } from "react";
 
 type Variant = "primary" | "secondary" | "ghost" | "olive" | "wrong";
 type Size = "md" | "lg";
@@ -23,6 +24,11 @@ const sizes: Record<Size, string> = {
   lg: "h-14 px-6 text-[17px] rounded-2xl",
 };
 
+/** The tactile button look, for elements that are not a <Button> (e.g. links). */
+export function buttonClass({ variant = "primary", size = "md", block }: { variant?: Variant; size?: Size; block?: boolean } = {}) {
+  return `relative inline-flex select-none items-center justify-center gap-2 font-semibold tracking-[-0.01em] transition-[transform,translate,box-shadow,background-color,color,opacity] duration-100 disabled:pointer-events-none disabled:opacity-40 ${variants[variant]} ${sizes[size]} ${block ? "w-full" : ""}`;
+}
+
 export interface ButtonProps extends HTMLMotionProps<"button"> {
   variant?: Variant;
   size?: Size;
@@ -39,8 +45,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       whileHover={{ y: variant === "ghost" ? 0 : -1 }}
       transition={{ type: "spring", stiffness: 500, damping: 30 }}
-      className={`relative inline-flex select-none items-center justify-center gap-2 font-semibold tracking-[-0.01em] transition-[transform,box-shadow,background-color,color,opacity] duration-100 disabled:pointer-events-none disabled:opacity-40 ${variants[variant]} ${sizes[size]} ${block ? "w-full" : ""} ${className}`}
+      className={`${buttonClass({ variant, size, block })} ${className}`}
       {...rest}
     />
   );
 });
+
+/** A navigation link that looks and presses like a Button. */
+export function ButtonLink({
+  variant = "primary",
+  size = "md",
+  block,
+  className = "",
+  ...rest
+}: ComponentProps<typeof Link> & { variant?: Variant; size?: Size; block?: boolean }) {
+  return (
+    <Link
+      className={`${buttonClass({ variant, size, block })} ${variant === "ghost" ? "" : "hover:-translate-y-px"} ${className}`}
+      {...rest}
+    />
+  );
+}

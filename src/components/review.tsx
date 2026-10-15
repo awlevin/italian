@@ -1,17 +1,30 @@
 "use client";
 
-import { motion } from "motion/react";
-import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { allItems, course, itemById } from "@/content/course";
 import { shuffle } from "@/lib/diff";
 import { dueItemIds } from "@/lib/stats";
 import { Session, type SessionItem, type SessionResult } from "./lesson/session";
 import { useDispatch, useProgress, useProgressReady } from "./progress/provider";
-import { Button } from "./ui/button";
-import { IconArrowRight, IconRepeat } from "./ui/icons";
+import { Button, ButtonLink } from "./ui/button";
+import { IconArrowRight, IconCheck, IconRepeat, IconTrain } from "./ui/icons";
 
 const SESSION_SIZE = 12;
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** "in 40 min", "in 3 h", "tomorrow", "in 4 days". */
+function fromNow(ms: number) {
+  const min = Math.max(1, Math.round(ms / 60_000));
+  if (min < 60) return `in ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `in ${h} h`;
+  const d = Math.round(h / 24);
+  return d === 1 ? "tomorrow" : `in ${d} days`;
+}
 
 export function Review({ shell }: { shell: (children: React.ReactNode) => React.ReactNode }) {
   const progress = useProgress();
@@ -19,13 +32,28 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
   const dispatch = useDispatch();
   const [session, setSession] = useState<SessionItem[] | null>(null);
   const [result, setResult] = useState<SessionResult | null>(null);
+  // A running session owns a history entry (?s=1): the session's Leave link
+  // (to /review) and the phone's back gesture both end it.
+  const inSession = useSearchParams().has("s");
+  useEffect(() => {
+    if (inSession && !session) window.history.replaceState(null, "", "/review");
+  }, [inSession, session]);
 
   const due = useMemo(() => dueItemIds(progress).filter((id) => itemById.has(id)), [progress]);
   const seen = Object.keys(progress.items).filter((id) => itemById.has(id));
   const completedLessons = course.filter((l) => progress.lessons[l.id]?.completedAt);
+  const [now] = useState(() => Date.now());
+  const nextDue = useMemo(() => {
+    const times = Object.entries(progress.items)
+      .filter(([id]) => itemById.has(id))
+      .map(([, v]) => Date.parse(v.dueAt))
+      .filter((t) => t > now);
+    return times.length ? Math.min(...times) : null;
+  }, [progress.items, now]);
 
   const start = (ids: string[]) => {
     setResult(null);
+    window.history.pushState(null, "", "/review?s=1");
     setSession(
       ids.slice(0, SESSION_SIZE).map((id) => {
         const it = itemById.get(id)!;
@@ -48,84 +76,151 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
   const onFinish = useCallback((r: SessionResult) => {
     setResult(r);
     setSession(null);
+    window.history.replaceState(null, "", "/review");
+    window.scrollTo({ top: 0 });
   }, []);
 
-  if (session) {
+  if (session && inSession) {
     return <Session items={session} exitHref="/review" onAnswer={onAnswer} onFinish={onFinish} />;
   }
 
+  const batch = Math.min(due.length, SESSION_SIZE);
+
   return shell(
-    <div className="space-y-6 pt-3">
-      <div className="space-y-2">
+    <div className="space-y-6 pt-2">
+      <div className="space-y-1.5">
         <h1 className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]">Ripasso</h1>
-        <p className="text-[16px] leading-relaxed text-ink-2">
-          What you missed comes back sooner. What you nailed comes back later. Five minutes here beats an hour of rereading.
-        </p>
+        <p className="text-[16px] leading-relaxed text-ink-2">Missed cards come back sooner, solid ones later. A few minutes a day keeps it all fresh.</p>
       </div>
 
-      {result && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl bg-olive-soft px-4 py-3 text-[15px] text-ink"
-        >
-          <span className="font-display text-[19px] text-olive italic">Fatto! </span>
-          {result.firstTryCorrect}/{result.exercises} right on the first try.
-        </motion.div>
-      )}
+      <AnimatePresence initial={false}>
+        {result && result.exercises > 0 && <ResultCard key="result" result={result} />}
+      </AnimatePresence>
 
-      <div className="rounded-[22px] border border-line bg-card p-5 shadow-card">
-        <div className="flex items-center gap-4">
-          <div className="grid size-14 place-items-center rounded-2xl bg-accent-soft text-accent">
-            <IconRepeat size={26} />
-          </div>
-          <div>
-            <p className="font-display text-[34px] leading-none">{ready ? due.length : "–"}</p>
-            <p className="text-[14px] text-ink-2">{due.length === 1 ? "card due now" : "cards due now"}</p>
-          </div>
-        </div>
-        <div className="mt-5 space-y-2">
-          {due.length > 0 ? (
-            <Button size="lg" block onClick={() => start(due)}>
-              Review {Math.min(due.length, SESSION_SIZE)} cards <IconArrowRight size={20} />
+      <motion.div layout="position" className="rounded-[22px] border border-line bg-card p-5 shadow-card">
+        {!ready ? (
+          <div className="h-[132px] animate-pulse rounded-2xl bg-paper-2/60" />
+        ) : due.length > 0 ? (
+          <>
+            <div className="flex items-center gap-4">
+              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent">
+                <IconRepeat size={26} />
+              </div>
+              <div>
+                <p className="font-display text-[34px] leading-none tabular-nums">{due.length}</p>
+                <p className="mt-1 text-[14px] text-ink-2">
+                  {due.length === 1 ? "card due now" : "cards due now"}
+                  <span className="text-ink-3"> · about {Math.max(1, Math.round((batch * 10) / 60))} min</span>
+                </p>
+              </div>
+            </div>
+            <Button size="lg" block className="mt-5" onClick={() => start(due)}>
+              Review {plural(batch, "card", "cards")} <IconArrowRight size={20} />
             </Button>
-          ) : seen.length > 0 ? (
-            <>
-              <p className="pb-1 text-[15px] text-ink-2">All caught up. Want extra practice anyway?</p>
-              <Button size="lg" variant="secondary" block onClick={practiceAll}>
-                Practice weakest cards
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className="pb-1 text-[15px] text-ink-2">Nothing to review yet. Finish a stop and its exercises will show up here.</p>
-              <Link href="/" className="block">
-                <Button size="lg" block tabIndex={-1}>
-                  Go to the journey
-                </Button>
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
+          </>
+        ) : seen.length > 0 ? (
+          <>
+            <div className="flex items-center gap-4">
+              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-olive-soft text-olive">
+                <IconCheck size={28} strokeWidth={2.6} />
+              </div>
+              <div>
+                <p className="font-display text-[26px] leading-tight">Tutto in ordine</p>
+                <p className="text-[14px] text-ink-2">
+                  All caught up.{nextDue && <span className="text-ink-3"> Next card due {fromNow(nextDue - now)}.</span>}
+                </p>
+              </div>
+            </div>
+            <Button size="lg" variant="secondary" block className="mt-5" onClick={practiceAll}>
+              Practice weakest cards anyway
+            </Button>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-4">
+              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-paper-2 text-ink-3">
+                <IconTrain size={26} />
+              </div>
+              <div>
+                <p className="font-display text-[26px] leading-tight">Niente ancora</p>
+                <p className="text-[14px] text-ink-2">Finish a stop and its cards show up here.</p>
+              </div>
+            </div>
+            <ButtonLink href="/" size="lg" block className="mt-5">
+              Go to the journey <IconArrowRight size={20} />
+            </ButtonLink>
+          </>
+        )}
+      </motion.div>
 
       {completedLessons.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="font-mono text-[11px] font-bold tracking-[0.18em] text-ink-3 uppercase">Practice one stop</h2>
+        <motion.section layout="position" className="space-y-3">
+          <h2 className="font-mono text-[11px] font-bold tracking-[0.16em] text-ink-3 uppercase">Practice one stop</h2>
           <div className="flex flex-wrap gap-2">
             {completedLessons.map((l) => (
-              <button
+              <motion.button
                 key={l.id}
                 type="button"
+                whileTap={{ scale: 0.95 }}
                 onClick={() => start(shuffle(allItems.filter((i) => i.lesson.id === l.id).map((i) => i.id)))}
-                className="rounded-full border border-line bg-card px-3.5 py-2 text-[14px] font-medium text-ink-2 transition-colors hover:border-ink-3/50 hover:text-ink"
+                className="h-11 rounded-full border border-line bg-card px-4 font-display text-[16px] text-ink-2 transition-colors hover:border-ink-3/50 hover:text-ink"
               >
                 {l.city}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </section>
+        </motion.section>
       )}
     </div>,
+  );
+}
+
+function ResultCard({ result }: { result: SessionResult }) {
+  const pct = result.firstTryCorrect / result.exercises;
+  const r = 22;
+  const c = 2 * Math.PI * r;
+  const verdict = pct === 1 ? "Perfetto!" : pct >= 0.75 ? "Bravo!" : pct >= 0.5 ? "Fatto!" : "Ci siamo quasi";
+  const line =
+    pct === 1
+      ? "Every card right on the first try."
+      : pct >= 0.5
+        ? "The misses come back sooner, so they stick."
+        : "Tricky set. The misses come back soon for another go.";
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.35, ease: EASE }}
+      className="flex items-center gap-4 rounded-[22px] bg-olive-soft p-4 pr-5"
+      role="status"
+    >
+      <div className="relative grid size-16 shrink-0 place-items-center">
+        <svg viewBox="0 0 52 52" className="absolute inset-0 -rotate-90" aria-hidden>
+          <circle cx="26" cy="26" r={r} fill="none" stroke="currentColor" strokeWidth="4" className="text-olive/20" />
+          <motion.circle
+            cx="26"
+            cy="26"
+            r={r}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeLinecap="round"
+            className="text-olive"
+            strokeDasharray={c}
+            initial={{ strokeDashoffset: c }}
+            animate={{ strokeDashoffset: c * (1 - pct) }}
+            transition={{ duration: 0.9, delay: 0.2, ease: EASE }}
+          />
+        </svg>
+        <span className="font-mono text-[13px] font-bold text-olive tabular-nums">
+          {result.firstTryCorrect}/{result.exercises}
+        </span>
+      </div>
+      <div className="min-w-0">
+        <p className="font-display text-[24px] leading-tight text-ink italic">{verdict}</p>
+        <p className="text-[14px] leading-snug text-ink-2">{line}</p>
+      </div>
+    </motion.div>
   );
 }

@@ -42,14 +42,15 @@ function MorphDemo() {
 
 export function Welcome() {
   return (
-    <main className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col px-6 pt-[calc(2rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-      <p className="font-display text-[22px] italic text-ink">Ponte</p>
+    <main className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col px-6 pt-[calc(0.75rem+env(safe-area-inset-top))]">
+      <p className="py-1.5 font-display text-[24px] tracking-[-0.01em] text-ink italic">Ponte</p>
 
-      <div className="flex flex-1 flex-col justify-center gap-9 py-10">
+      <div className="flex flex-1 flex-col justify-center gap-5 pt-4 pb-2 sm:gap-8 sm:py-8">
         <div className="space-y-2">
           <p className="font-mono text-[10px] font-bold tracking-[0.22em] text-ink-3">PARTENZE · DEPARTURES</p>
-          <div className="rounded-2xl bg-[#14100c] p-3 shadow-lift">
-            <SplitFlap text="BENVENUTO" size="lg" />
+          <div className="relative overflow-hidden rounded-[20px] bg-[#14100c] px-3 py-3.5 shadow-lift ring-1 ring-black/5 dark:ring-white/10">
+            <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
+            <SplitFlap text="BENVENUTO" size="lg" className="justify-center" />
           </div>
         </div>
 
@@ -57,13 +58,13 @@ export function Welcome() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="space-y-4"
+          className="space-y-3"
         >
-          <h1 className="font-display-wonk text-[44px] leading-[0.98] tracking-[-0.03em] text-balance">
+          <h1 className="font-display-wonk text-[clamp(34px,10vw,52px)] leading-[0.98] tracking-[-0.03em] text-balance">
             Italian, built on the Spanish you already speak.
           </h1>
-          <p className="max-w-[36ch] text-[17px] leading-relaxed text-ink-2">
-            Ten train stops from Milano to Palermo. Sound rules, the grammar that differs, and the phrases you will need tomorrow.
+          <p className="max-w-[34ch] text-[16px] leading-snug text-ink-2 sm:text-[17px]">
+            Ten train stops, Milano to Palermo. Only what differs from Spanish, plus the phrases you need tomorrow.
           </p>
         </motion.div>
 
@@ -71,7 +72,7 @@ export function Welcome() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
-          className="rounded-2xl border border-line bg-card/70 px-4 py-4"
+          className="rounded-2xl border border-line bg-card/70 px-4 pt-2 pb-3 shadow-card"
         >
           <MorphDemo />
           <p className="mt-1 text-center text-[13px] text-ink-3">Your Spanish is already most of the way there.</p>
@@ -82,7 +83,8 @@ export function Welcome() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.1 }}
-        className="space-y-2"
+        // Pinned to the bottom so the way in is always on screen, even on short phones.
+        className="sticky bottom-0 -mx-6 space-y-1 bg-linear-to-t from-paper from-75% to-transparent px-6 pt-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
       >
         <SignUpButton mode="modal">
           <Button size="lg" block>
@@ -91,7 +93,8 @@ export function Welcome() {
         </SignUpButton>
         <SignInButton mode="modal">
           <Button size="md" variant="ghost" block>
-            I already have a ticket · Sign in
+            <span className="font-medium text-ink-2">Already have a ticket?</span>
+            <span className="text-accent">Sign in</span>
           </Button>
         </SignInButton>
       </motion.div>

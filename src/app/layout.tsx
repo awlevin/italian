@@ -2,6 +2,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { clerkAppearance, clerkLocalization } from "@/lib/clerk-theme";
+import "./clerk.css";
 import "./globals.css";
 
 const display = Fraunces({
@@ -25,7 +27,9 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: { default: "Ponte — Italian from Spanish", template: "%s · Ponte" },
   description: "A fast Italian crash course for Spanish speakers. Built for a trip that starts tomorrow.",
+  applicationName: "Ponte",
   appleWebApp: { capable: true, title: "Ponte", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -42,25 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}>
       <body className="relative min-h-full">
-        <ClerkProvider
-          appearance={{
-            variables: {
-              colorPrimary: "var(--accent)",
-              colorBackground: "var(--card)",
-              colorForeground: "var(--ink)",
-              colorMutedForeground: "var(--ink-2)",
-              colorInput: "var(--paper)",
-              colorInputForeground: "var(--ink)",
-              colorBorder: "var(--line)",
-              colorNeutral: "var(--ink)",
-              colorDanger: "var(--wrong)",
-              colorSuccess: "var(--olive)",
-              colorPrimaryForeground: "var(--accent-ink)",
-              fontFamily: "var(--font-body)",
-              borderRadius: "0.85rem",
-            },
-          }}
-        >
+        <ClerkProvider appearance={clerkAppearance} localization={clerkLocalization}>
           <Providers>{children}</Providers>
         </ClerkProvider>
       </body>

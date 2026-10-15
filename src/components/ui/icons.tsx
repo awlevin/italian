@@ -103,3 +103,34 @@ export const IconBridge = (p: P) => (
     <path d="M7.5 9.6v6.9M12 8.5v8M16.5 9.6v6.9" />
   </Svg>
 );
+export const IconSearch = (p: P) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="M20 20l-4.2-4.2" />
+  </Svg>
+);
+/** Turn the phone around: two arrows chasing each other. */
+export const IconRotate = (p: P) => (
+  <Svg {...p}>
+    <path d="M4.5 9.5A8 8 0 0 1 18 6.5l1.5 1.5M19.5 3.5V8H15" />
+    <path d="M19.5 14.5A8 8 0 0 1 6 17.5L4.5 16M4.5 20.5V16H9" />
+  </Svg>
+);
+export const IconCloudCheck = (p: P) => (
+  <Svg {...p}>
+    <path d="M7 18.5a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.6 1.5A3.75 3.75 0 0 1 17.5 18.5z" />
+    <path d="M9.5 13.5l2 2 3.5-3.5" />
+  </Svg>
+);
+export const IconCloudOff = (p: P) => (
+  <Svg {...p}>
+    <path d="M9.5 6.2A6 6 0 0 1 18.1 11a3.75 3.75 0 0 1 2.4 5.5M17 18.5H7a4.5 4.5 0 0 1-.9-8.9" />
+    <path d="M3.5 3.5l17 17" />
+  </Svg>
+);
+export const IconDevice = (p: P) => (
+  <Svg {...p}>
+    <rect x="6.5" y="2.5" width="11" height="19" rx="2.5" />
+    <path d="M10.5 18.5h3" />
+  </Svg>
+);

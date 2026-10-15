@@ -133,10 +133,13 @@ body::before {
   margin-inline: -0.08em;
 }
 
-:focus-visible {
-  outline: 2.5px solid var(--sea);
-  outline-offset: 2px;
-  border-radius: 10px;
+/* Layered so an element's own rounded-* utility wins over the default focus radius. */
+@layer base {
+  :focus-visible {
+    outline: 2.5px solid var(--sea);
+    outline-offset: 2px;
+    border-radius: 10px;
+  }
 }
 
 ::selection {

@@ -1,0 +1,16 @@
+/*
+ * Clerk integration styles. Imported before globals.css.
+ *
+ * 1. Cascade layer order: Clerk's styles sit between base and utilities, so
+ *    the Tailwind classes in its appearance config win without !important.
+ *    (Tailwind drops a layer statement placed above its own @import, so it
+ *    lives here.)
+ * 2. Clerk components define their own `--accent` custom property. Passing
+ *    `var(--accent)` to Clerk would make it reference itself and resolve to
+ *    nothing, so Clerk gets the accent under a distinct name.
+ */
+@layer theme, base, clerk, components, utilities;
+
+:root {
+  --ponte-accent: var(--accent);
+}
