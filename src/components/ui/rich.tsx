@@ -4,8 +4,6 @@ import { Fragment } from "react";
 import { speak } from "@/lib/audio";
 import { MARKUP, sayable } from "@/lib/text";
 
-
-
 /**
  * Renders inline markup: «Italian» (tap to hear), ‹Spanish›, ~~wrong~~, **bold**.
  * Italian spans read as highlighted ink; Spanish reads as sea-blue italics.
