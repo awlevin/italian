@@ -9,6 +9,7 @@ import { readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { course } from "../src/content/course";
 import { phrasebook } from "../src/content/phrasebook";
+import { trip } from "../src/content/trip";
 import type { Lesson, Step, Table } from "../src/content/types";
 import { fold, MARKUP } from "../src/lib/text";
 
@@ -193,10 +194,11 @@ function checkStep(lesson: Lesson, step: Step) {
 }
 
 // ── Lessons ──────────────────────────────────────────────────────────────────
+// Course and trip share one id space: progress is keyed by lesson id.
 const lessonIds = new Set<string>();
-for (const lesson of course) {
+function checkLesson(lesson: Lesson) {
   const at = lesson.id;
-  if (lessonIds.has(lesson.id)) fail(at, "duplicate lesson id");
+  if (lessonIds.has(lesson.id)) fail(at, "duplicate lesson id (across course and trip)");
   lessonIds.add(lesson.id);
   if (!KEBAB.test(lesson.id)) fail(at, "lesson id is not kebab-case");
 
@@ -229,9 +231,20 @@ for (const lesson of course) {
   if (last && (last.kind === "teach" || last.kind === "morph")) fail(at, "ends on a concept card, not an exercise");
 }
 
-// Every lesson file must be on the journey.
-const files = readdirSync(join(ROOT, "src/content/lessons")).filter((f) => f.endsWith(".ts"));
-for (const f of files) if (!lessonIds.has(f.replace(/\.ts$/, ""))) fail(`lessons/${f}`, "file is not in course.ts, or its id differs from the file name");
+for (const lesson of course) checkLesson(lesson);
+for (const lesson of trip) {
+  checkLesson(lesson);
+  if (!lesson.id.startsWith("trip-")) fail(lesson.id, 'trip lesson id must start with "trip-"');
+}
+
+// Every lesson file must be on its line, under its own id.
+function checkFiles(dir: string, lessons: Lesson[], registry: string) {
+  const ids = new Set(lessons.map((l) => l.id));
+  const files = readdirSync(join(ROOT, "src/content", dir)).filter((f) => f.endsWith(".ts") && f !== "index.ts");
+  for (const f of files) if (!ids.has(f.replace(/\.ts$/, ""))) fail(`${dir}/${f}`, `file is not in ${registry}, or its id differs from the file name`);
+}
+checkFiles("lessons", course, "course.ts");
+checkFiles("trip", trip, "trip/index.ts");
 
 // ── Phrasebook ───────────────────────────────────────────────────────────────
 const groupIds = new Set<string>();
@@ -261,5 +274,5 @@ if (problems.length) {
   console.error(`\nContent lint failed: ${problems.length} problem(s).`);
   process.exit(1);
 }
-const steps = course.reduce((n, l) => n + l.steps.length, 0);
-console.log(`Content OK: ${course.length} lessons, ${steps} steps, ${phraseIds.size} phrases.`);
+const steps = [...course, ...trip].reduce((n, l) => n + l.steps.length, 0);
+console.log(`Content OK: ${course.length} lessons + ${trip.length} trip lessons, ${steps} steps, ${phraseIds.size} phrases.`);

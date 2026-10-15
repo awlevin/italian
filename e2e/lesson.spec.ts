@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { course } from "../src/content/course";
+import { allLessons } from "../src/content/course";
 import type { Lesson } from "../src/content/types";
 import { plain } from "../src/lib/text";
 import { signIn } from "./auth";
@@ -42,8 +42,8 @@ const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 test.describe.configure({ mode: "serial" });
 
-for (const lesson of course) {
-  test(`completes ${lesson.city} with every answer right`, async ({ page }) => {
+for (const lesson of allLessons) {
+  test(`completes ${lesson.id} with every answer right`, async ({ page }) => {
     test.skip(test.info().project.name !== "light", "content is mode-independent");
     await signIn(page, `/lesson/${lesson.id}`);
     const start = page.getByRole("button", { name: /Partenza|Ride again|Start from the beginning/ }).last();

@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
-import { course, itemId } from "@/content/course";
+import { itemId, lineOf } from "@/content/course";
 import type { Lesson } from "@/content/types";
 import { isExercise } from "@/content/types";
 import { useDispatch, useProgress, useProgressReady } from "@/components/progress/provider";
@@ -29,9 +29,10 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const [startAt, setStartAt] = useState(0);
   const [result, setResult] = useState<SessionResult | null>(null);
 
-  const idx = course.findIndex((l) => l.id === lesson.id);
-  const prev = course[idx - 1];
-  const next = course[idx + 1];
+  const line = lineOf(lesson.id).lessons;
+  const idx = line.findIndex((l) => l.id === lesson.id);
+  const prev = line[idx - 1];
+  const next = line[idx + 1];
   const items = useMemo<SessionItem[]>(() => lesson.steps.map((step) => ({ key: step.id, step })), [lesson]);
   const exerciseCount = lesson.steps.filter(isExercise).length;
   const resumeAt = saved && !saved.completedAt && saved.stepIndex > 0 && saved.stepIndex < lesson.steps.length ? saved.stepIndex : 0;

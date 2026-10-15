@@ -3,7 +3,7 @@
  * the client keys them (src/lib/audio.ts → audioKey). Shared by gen-audio and
  * check-audio so the two never disagree.
  */
-import { course } from "../src/content/course";
+import { allLessons } from "../src/content/course";
 import { phrasebook } from "../src/content/phrasebook";
 import type { Step } from "../src/content/types";
 import { audioKey, MARKUP, plain, sayable } from "../src/lib/text";
@@ -71,7 +71,7 @@ export function collectAudioStrings(): AudioString[] {
     if (!prev) byKey.set(key, { key, text, source });
   };
 
-  for (const lesson of course) {
+  for (const lesson of allLessons) {
     for (const v of lesson.vocab) add(v.it, `${lesson.id}/vocab`);
     for (const step of lesson.steps) {
       const src = `${lesson.id}/${step.id}`;

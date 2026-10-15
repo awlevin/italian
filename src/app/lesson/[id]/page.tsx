@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AuthGate, Splash } from "@/components/auth-gate";
 import { LessonPlayer } from "@/components/lesson/player";
-import { course, lessonById } from "@/content/course";
+import { allLessons, lessonById } from "@/content/course";
 
 export function generateStaticParams() {
-  return course.map((l) => ({ id: l.id }));
+  return allLessons.map((l) => ({ id: l.id }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/lesson/[id]">) {

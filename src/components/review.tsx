@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { allItems, course, itemById } from "@/content/course";
+import { allItems, allLessons, itemById, lines } from "@/content/course";
 import { shuffle } from "@/lib/diff";
 import { dueItemIds } from "@/lib/stats";
 import { Session, type SessionItem, type SessionResult } from "./lesson/session";
@@ -41,7 +41,7 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
 
   const due = useMemo(() => dueItemIds(progress).filter((id) => itemById.has(id)), [progress]);
   const seen = Object.keys(progress.items).filter((id) => itemById.has(id));
-  const completedLessons = course.filter((l) => progress.lessons[l.id]?.completedAt);
+  const completedLessons = allLessons.filter((l) => progress.lessons[l.id]?.completedAt);
   const [now] = useState(() => Date.now());
   const nextDue = useMemo(() => {
     const times = Object.entries(progress.items)
@@ -156,19 +156,28 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
       {completedLessons.length > 0 && (
         <motion.section layout="position" className="space-y-3">
           <h2 className="font-mono text-[11px] font-bold tracking-[0.16em] text-ink-3 uppercase">Practice one stop</h2>
-          <div className="flex flex-wrap gap-2">
-            {completedLessons.map((l) => (
-              <motion.button
-                key={l.id}
-                type="button"
-                whileTap={{ scale: 0.95 }}
-                onClick={() => start(shuffle(allItems.filter((i) => i.lesson.id === l.id).map((i) => i.id)))}
-                className="h-11 rounded-full border border-line bg-card px-4 font-display text-[16px] text-ink-2 transition-colors hover:border-ink-3/50 hover:text-ink"
-              >
-                {l.city}
-              </motion.button>
-            ))}
-          </div>
+          {lines.map((line) => {
+            const done = line.lessons.filter((l) => completedLessons.includes(l));
+            if (!done.length) return null;
+            return (
+              <div key={line.id} className="space-y-2">
+                <p className="text-[13px] text-ink-3 italic">{line.it}</p>
+                <div className="flex flex-wrap gap-2">
+                  {done.map((l) => (
+                    <motion.button
+                      key={l.id}
+                      type="button"
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => start(shuffle(allItems.filter((i) => i.lesson.id === l.id).map((i) => i.id)))}
+                      className="h-11 rounded-full border border-line bg-card px-4 font-display text-[16px] text-ink-2 transition-colors hover:border-ink-3/50 hover:text-ink"
+                    >
+                      {l.city}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </motion.section>
       )}
     </div>,

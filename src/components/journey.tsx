@@ -1,18 +1,64 @@
 "use client";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { course, itemById } from "@/content/course";
+import { useState } from "react";
+import { itemById, lines, type LineId } from "@/content/course";
 import type { Lesson } from "@/content/types";
 import { dueItemIds, learnedCount, streak } from "@/lib/stats";
 import { useProgress, useProgressReady } from "./progress/provider";
 import { ButtonLink } from "./ui/button";
 import { IconArrowRight, IconCheck, IconRepeat, IconTrain } from "./ui/icons";
+import { Segmented } from "./ui/segmented";
 import { SplitFlap } from "./ui/split-flap";
 
 const MotionLink = motion.create(Link);
 
+const LINE_KEY = "ponte:line";
+
+function readLine(): LineId {
+  try {
+    const v = localStorage.getItem(LINE_KEY);
+    return v === "viaggio" ? "viaggio" : "corso";
+  } catch {
+    return "corso";
+  }
+}
+
 export function Journey() {
+  const [lineId, setLineId] = useState<LineId>(readLine);
+  const choose = (id: LineId) => {
+    setLineId(id);
+    try {
+      localStorage.setItem(LINE_KEY, id);
+    } catch {}
+  };
+  const line = lines.find((l) => l.id === lineId)!;
+
+  return (
+    <div className="space-y-5 pt-2">
+      <Segmented
+        label="Line"
+        value={lineId}
+        onChange={choose}
+        options={lines.map((l) => ({ value: l.id, label: l.it }))}
+      />
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={line.id}
+          initial={{ opacity: 0, x: line.id === "viaggio" ? 24 : -24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: line.id === "viaggio" ? -24 : 24, transition: { duration: 0.14 } }}
+          transition={{ type: "spring", stiffness: 420, damping: 36 }}
+        >
+          <LineView lessons={line.lessons} />
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function LineView({ lessons: course }: { lessons: Lesson[] }) {
   const progress = useProgress();
   const ready = useProgressReady();
   const currentIdx = Math.max(
@@ -36,9 +82,16 @@ export function Journey() {
         : { href: `/lesson/${current.id}`, label: `Parti per ${current.city}` };
 
   return (
-    <div className="space-y-7 pt-2">
+    <div className="space-y-7">
       <section className="space-y-3">
-        <Board lesson={current} index={allDone ? course.length - 1 : currentIdx} allDone={allDone} ready={ready} step={inProgress ? cur.stepIndex : null} />
+        <Board
+          lesson={current}
+          index={allDone ? course.length - 1 : currentIdx}
+          total={course.length}
+          allDone={allDone}
+          ready={ready}
+          step={inProgress ? cur.stepIndex : null}
+        />
         <ButtonLink href={cta.href} size="lg" block>
           {cta.label}
           <IconArrowRight size={20} />
@@ -57,7 +110,7 @@ export function Journey() {
 
       <section>
         <div className="mb-2 flex items-baseline justify-between gap-3">
-          <h2 className="font-mono text-[11px] font-bold tracking-[0.16em] text-ink-3 uppercase">Il viaggio</h2>
+          <h2 className="font-mono text-[11px] font-bold tracking-[0.16em] text-ink-3 uppercase">Le fermate</h2>
           {ready && (days > 0 || learned > 0) && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 text-[13px] text-ink-3">
               {days > 0 && <Stat value={days} label={days === 1 ? "giorno di fila" : "giorni di fila"} title="Day streak" />}
@@ -73,6 +126,7 @@ export function Journey() {
               key={l.id}
               lesson={l}
               index={i}
+              last={i === course.length - 1}
               state={progress.lessons[l.id]?.completedAt ? "done" : !allDone && i === currentIdx ? "current" : "ahead"}
               prevDone={i > 0 && !!progress.lessons[course[i - 1].id]?.completedAt}
               step={progress.lessons[l.id]?.stepIndex ?? 0}
@@ -88,12 +142,14 @@ export function Journey() {
 function Board({
   lesson,
   index,
+  total,
   allDone,
   ready,
   step,
 }: {
   lesson: Lesson;
   index: number;
+  total: number;
   allDone: boolean;
   ready: boolean;
   step: number | null;
@@ -110,7 +166,7 @@ function Board({
         <span>{allDone ? "CAPOLINEA · LAST STOP" : "PROSSIMA FERMATA · NEXT STOP"}</span>
         <span className="flex items-center gap-1.5">
           <span className="size-1.5 animate-pulse rounded-full bg-board-signal" />
-          {String(index + 1).padStart(2, "0")}/{course.length}
+          {String(index + 1).padStart(2, "0")}/{total}
         </span>
       </div>
       <div className="h-[30px]">{ready && <SplitFlap key={lesson.id} text={lesson.city} />}</div>
@@ -171,6 +227,7 @@ const RAIL = "absolute left-4 w-[3px] -translate-x-1/2 overflow-hidden bg-line";
 function Station({
   lesson: l,
   index: i,
+  last,
   state,
   prevDone,
   step,
@@ -178,13 +235,13 @@ function Station({
 }: {
   lesson: Lesson;
   index: number;
+  last: boolean;
   state: "done" | "current" | "ahead";
   prevDone: boolean;
   step: number;
   accuracy: number | null;
 }) {
   const first = i === 0;
-  const last = i === course.length - 1;
   const fill = (on: boolean, delay: number) =>
     on && (
       <motion.span

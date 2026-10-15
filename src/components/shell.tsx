@@ -82,7 +82,7 @@ function SyncBadge() {
 }
 
 const TABS = [
-  { href: "/", label: "Viaggio", Icon: IconTrain },
+  { href: "/", label: "Lezioni", Icon: IconTrain },
   { href: "/review", label: "Ripasso", Icon: IconRepeat },
   { href: "/phrasebook", label: "Frasario", Icon: IconBook },
 ] as const;
