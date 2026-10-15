@@ -3,6 +3,7 @@
 /** Tiny synthesized UI sounds. No assets, ~0ms latency. */
 let ctx: AudioContext | null = null;
 
+// "ponte" is the app's old name; the key stays so saved choices survive.
 const MUTE_KEY = "ponte:sfx-muted";
 export const isMuted = () => {
   try {

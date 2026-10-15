@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/brand/banner.png" alt="Ponte: Learn Italian, for Spanish speakers. A sound-rule card turns noche into notte, leche into latte and ocho into otto." width="900">
+  <img src="assets/brand/banner.png" alt="Ciao: Learn Italian, for Spanish speakers. A sound-rule card turns noche into notte, leche into latte and ocho into otto." width="900">
 </p>
 
 <p align="center">
@@ -17,9 +17,10 @@ Italian is already in my head. *Noche* is *notte*, *leche* is *latte*,
 other, the grammar where the two languages split, and the phrases for a bar,
 a station and a hotel desk. So I made that.
 
-Ponte (Italian for "bridge") is ten short lessons, a review deck that
-schedules itself, and a phrasebook you can hold up to a waiter. It is a
-phone-first web app, and your progress survives bad roaming data.
+Ciao is ten short grammar lessons, seven more for one real route through
+Italy, a review deck that schedules itself, and a phrasebook you can hold up
+to a waiter. It is a phone-first web app, and your progress survives bad
+roaming data.
 
 <p align="center">
   <img src="assets/screenshots/phones-light.png" alt="Three phone screens: the lesson list with the next lesson on a split-flap board; a sound-rule card where noche, ocho, leche and hecho have become notte, otto, latte and fatto; and the phrase 'Il conto, per favore' shown full-screen" width="900">
@@ -44,6 +45,18 @@ The ten lessons:
 | Ho mangiato, sono andato | The past tense |
 | Mi piace, ci vado, ne voglio due | Pronouns, *piacere*, *ci* and *ne* |
 | Falsi amici | False friends, and how Italians actually talk |
+
+A second line, *Il mio viaggio*, follows one trip from Milano to Venezia:
+
+| Lesson | What it covers |
+| --- | --- |
+| Si parte! | Landing at Linate, train to Como |
+| Sul lago | Boats, a table by the water and a pasta class |
+| Cinque paesi | Village trains, a room with no reception, trails and focaccia |
+| In cantina | The estate shuttle, a wine tasting and dinner among the vines |
+| Viva gli sposi! | A wedding, museums, leather and a dinner for two |
+| In macchina e in montagna | Rental car, fuel, tolls, ZTL and rifugi |
+| Ultima fermata | Car drop-off, vaporetto, calli and bacari |
 
 Do them in any order. The list suggests a path but does not lock anything.
 

@@ -43,7 +43,7 @@ function MorphDemo() {
 export function Welcome() {
   return (
     <main className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col px-6 pt-[calc(0.75rem+env(safe-area-inset-top))]">
-      <p className="py-1.5 font-display text-[24px] tracking-[-0.01em] text-ink italic">Ponte</p>
+      <p className="py-1.5 font-display text-[24px] tracking-[-0.01em] text-ink italic">Ciao</p>
 
       <div className="flex flex-1 flex-col justify-center gap-5 pt-4 pb-2 sm:gap-8 sm:py-8">
         <div className="space-y-2">

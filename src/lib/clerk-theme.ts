@@ -4,16 +4,16 @@ import type { ComponentProps } from "react";
 type Props = ComponentProps<typeof ClerkProvider>;
 
 /**
- * Clerk's prebuilt UI dressed in Ponte's design system.
+ * Clerk's prebuilt UI dressed in the project design system.
  * Clerk styles live in the "clerk" CSS layer (declared in globals.css),
  * so the Tailwind classes below win without !important. Inside Clerk
- * elements `--accent` is Clerk's own variable, so use `--ponte-accent`
+ * elements `--accent` is Clerk's own variable, so use `--brand-accent`
  * (defined in app/clerk.css) for the accent color.
  */
 export const clerkAppearance: Props["appearance"] = {
   cssLayerName: "clerk",
   variables: {
-    colorPrimary: "var(--ponte-accent)",
+    colorPrimary: "var(--brand-accent)",
     colorPrimaryForeground: "var(--accent-ink)",
     colorBackground: "var(--card)",
     colorForeground: "var(--ink)",
@@ -59,13 +59,13 @@ export const clerkAppearance: Props["appearance"] = {
       "h-12 rounded-xl border border-line bg-paper text-[16px] text-ink shadow-none placeholder:text-ink-3 focus:shadow-none",
     otpCodeFieldInput: "text-[20px] font-mono border-line bg-paper text-ink",
     formButtonPrimary:
-      "h-12 rounded-xl bg-(--ponte-accent) bg-none text-[16px] font-semibold text-accent-ink normal-case shadow-[0_3px_0_var(--accent-press)] transition-[translate,box-shadow] hover:bg-(--ponte-accent) active:translate-y-[3px] active:shadow-none after:hidden",
+      "h-12 rounded-xl bg-(--brand-accent) bg-none text-[16px] font-semibold text-accent-ink normal-case shadow-[0_3px_0_var(--accent-press)] transition-[translate,box-shadow] hover:bg-(--brand-accent) active:translate-y-[3px] active:shadow-none after:hidden",
     buttonArrowIcon: "hidden",
     footer: "bg-paper-2 bg-none",
     footerActionText: "text-[14px] text-ink-2",
-    footerActionLink: "text-[14px] font-semibold text-(--ponte-accent) hover:text-accent-press",
+    footerActionLink: "text-[14px] font-semibold text-(--brand-accent) hover:text-accent-press",
     identityPreview: "rounded-xl border border-line bg-paper",
-    formResendCodeLink: "text-(--ponte-accent) font-semibold",
+    formResendCodeLink: "text-(--brand-accent) font-semibold",
     userButtonPopoverCard: "rounded-2xl border border-line shadow-lift",
     userButtonPopoverMain: "bg-card",
     userButtonPopoverFooter: "bg-paper-2 bg-none",
@@ -73,8 +73,8 @@ export const clerkAppearance: Props["appearance"] = {
   },
 };
 
-/** Clerk shows the dev instance's slug as the app name; Ponte says its own name. */
-const app = "Ponte";
+/** Clerk shows the dev instance's slug as the app name; the app says its own name. */
+const app = "Ciao";
 
 export const clerkLocalization: Props["localization"] = {
   signIn: {

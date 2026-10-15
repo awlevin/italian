@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ---------------------------------------------------------------
-   Ponte — brand asset renderer.
+   Ciao — brand asset renderer.
 
      node assets/brand/render.mjs        (or: pnpm brand)
 
@@ -31,7 +31,7 @@ const PAGES = [
 
 /** What the Open Graph image shows, for people who cannot see it. */
 const OG_ALT =
-  'Ponte: Learn Italian, for Spanish speakers. The Spanish word noche becomes the Italian notte.';
+  'Ciao: Learn Italian, for Spanish speakers. The Spanish word noche becomes the Italian notte.';
 
 /**
  * Icons drawn from icon.svg.

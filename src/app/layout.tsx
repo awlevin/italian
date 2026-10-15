@@ -26,10 +26,10 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL ?? "https://italian.aaronideas.com"),
-  title: { default: "Ponte — Learn Italian", template: "%s · Ponte" },
+  title: { default: "Ciao — Learn Italian", template: "%s · Ciao" },
   description: "Learn Italian.",
-  applicationName: "Ponte",
-  appleWebApp: { capable: true, title: "Ponte", statusBarStyle: "default" },
+  applicationName: "Ciao",
+  appleWebApp: { capable: true, title: "Ciao", statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
 

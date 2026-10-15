@@ -75,6 +75,7 @@ export class ProgressStore {
     this.loaded = !!cached;
   }
 
+  // "ponte" is the app's old name. Keep it: a new prefix would orphan unsynced outboxes.
   private key(k: string) {
     return `ponte:${k}:${this.userId}`;
   }

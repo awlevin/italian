@@ -12,5 +12,5 @@
 @layer theme, base, clerk, components, utilities;
 
 :root {
-  --ponte-accent: var(--accent);
+  --brand-accent: var(--accent);
 }

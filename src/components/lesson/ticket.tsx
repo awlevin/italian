@@ -65,7 +65,7 @@ export function Ticket({
       >
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ backgroundImage: `${rim("0")}, ${rim("100%")}` }} />
         <div className="flex items-center justify-between bg-accent px-5 py-2.5 font-mono text-[11px] font-bold tracking-[0.2em] text-accent-ink">
-          <span>BIGLIETTO · PONTE</span>
+          <span>BIGLIETTO · CIAO</span>
           <span>1ª CLASSE</span>
         </div>
         <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3 px-5 pt-5 pb-6">

@@ -14,6 +14,7 @@ import { SplitFlap } from "./ui/split-flap";
 
 const MotionLink = motion.create(Link);
 
+// "ponte" is the app's old name; the key stays so saved choices survive.
 const LINE_KEY = "ponte:line";
 
 function readLine(): LineId {

@@ -23,7 +23,7 @@ export function Splash() {
       className="relative z-10 grid min-h-dvh place-items-center opacity-0 [animation:splash-in_400ms_var(--ease-out-soft)_350ms_forwards]"
     >
       <div className="flex flex-col items-center gap-3">
-        <p className="font-display text-[30px] tracking-[-0.01em] text-ink italic">Ponte</p>
+        <p className="font-display text-[30px] tracking-[-0.01em] text-ink italic">Ciao</p>
         {/* A tiny train shuttling along a rail. */}
         <div className="relative h-[3px] w-16 overflow-hidden rounded-full bg-line">
           <span className="absolute inset-y-0 left-0 w-5 rounded-full bg-accent [animation:splash-train_1.1s_ease-in-out_infinite_alternate]" />

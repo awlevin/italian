@@ -172,7 +172,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div aria-hidden className="fixed inset-x-0 top-0 z-30 h-[env(safe-area-inset-top)] bg-paper" />
       <header className="mx-auto flex max-w-xl items-center justify-between gap-3 px-5 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
         <Link href="/" className="-ml-1 rounded-lg px-1 font-display text-[24px] tracking-[-0.01em] text-ink italic">
-          Ponte
+          Ciao
         </Link>
         <div className="flex min-w-0 items-center gap-2">
           <SyncBadge />
