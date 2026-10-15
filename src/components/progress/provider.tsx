@@ -16,14 +16,14 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     const s = store;
     void s.load();
 
-    const flush = () => void s.flush();
+    const reconnect = () => s.reconnect();
     const flushOnHide = () => {
       if (document.visibilityState === "hidden") void s.flush({ keepalive: true });
     };
-    window.addEventListener("online", flush);
+    window.addEventListener("online", reconnect);
     document.addEventListener("visibilitychange", flushOnHide);
     return () => {
-      window.removeEventListener("online", flush);
+      window.removeEventListener("online", reconnect);
       document.removeEventListener("visibilitychange", flushOnHide);
     };
   }, [store]);

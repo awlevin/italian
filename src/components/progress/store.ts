@@ -60,6 +60,10 @@ export class ProgressStore {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private inflight = false;
   private attempt = 0;
+  private loadAttempt = 0;
+  private loading = false;
+  /** True once a server snapshot has been loaded this session. */
+  private fresh = false;
   status: SyncStatus = "idle";
   loaded = false;
 
@@ -118,7 +122,18 @@ export class ProgressStore {
     this.timer = setTimeout(() => void this.flush(), ms);
   }
 
+  /**
+   * Pulls the server snapshot and replays unsent ops on top.
+   * Flushes wait while a load is in flight, so a confirmed op can never be
+   * dropped by an older server response arriving after it.
+   */
   async load() {
+    if (this.loading) return;
+    if (this.inflight) {
+      setTimeout(() => void this.load(), 300);
+      return;
+    }
+    this.loading = true;
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const res = await fetch(`/api/progress?tz=${encodeURIComponent(tz)}`, { cache: "no-store" });
@@ -126,18 +141,28 @@ export class ProgressStore {
       this.server = (await res.json()) as Snapshot;
       this.write("snapshot", this.server);
       this.snapshot = this.outbox.reduce(reduce, this.server);
-      this.loaded = true;
-      this.emit();
+      this.fresh = true;
+      this.loadAttempt = 0;
     } catch {
-      this.loaded = true;
       this.setStatus(navigator.onLine ? "error" : "offline");
+      const delay = RETRY_MS[Math.min(this.loadAttempt++, RETRY_MS.length - 1)];
+      setTimeout(() => void this.load(), delay);
+    } finally {
+      this.loading = false;
+      this.loaded = true;
       this.emit();
     }
     if (this.outbox.length) void this.flush();
   }
 
+  /** Called when the network comes back. */
+  reconnect() {
+    if (!this.fresh) void this.load();
+    else void this.flush();
+  }
+
   async flush({ keepalive = false } = {}) {
-    if (this.inflight || !this.outbox.length) return;
+    if (this.inflight || this.loading || !this.outbox.length) return;
     if (!navigator.onLine) return this.setStatus("offline");
     this.inflight = true;
     this.setStatus("saving");
