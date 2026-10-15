@@ -64,7 +64,7 @@ export function Welcome() {
             Learn Italian.
           </h1>
           <p className="max-w-[34ch] text-[16px] leading-snug text-ink-2 sm:text-[17px]">
-            Ten train stops, Milano to Palermo. Only what differs from Spanish, plus the phrases you need tomorrow.
+            Short lessons for Spanish speakers: the sounds, the grammar that differs, and the phrases you will need.
           </p>
         </motion.div>
 
@@ -88,12 +88,12 @@ export function Welcome() {
       >
         <SignUpButton mode="modal">
           <Button size="lg" block>
-            Start the journey
+            Get started
           </Button>
         </SignUpButton>
         <SignInButton mode="modal">
           <Button size="md" variant="ghost" block>
-            <span className="font-medium text-ink-2">Already have a ticket?</span>
+            <span className="font-medium text-ink-2">Already have an account?</span>
             <span className="text-accent">Sign in</span>
           </Button>
         </SignInButton>
