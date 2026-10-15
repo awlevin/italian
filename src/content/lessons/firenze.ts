@@ -7,7 +7,7 @@ export const lesson: Lesson = {
   title: "Essere, avere, stare",
   subtitle: "Core verbs & the present tense",
   summary:
-    "Ser and estar merge, tener becomes avere, and the present tense gets one tidy «noi» ending.",
+    "Ser and estar merge, tener becomes avere, and the present tense gets one tidy noi ending.",
   vocab: [
     { it: "essere", en: "to be (ser + estar)", es: "ser / estar" },
     { it: "stare", en: "to be (how you are), to stay", es: "estar (only sometimes)" },
@@ -28,14 +28,14 @@ export const lesson: Lesson = {
       id: "essere-both",
       kind: "teach",
       title: "One verb for ser and estar",
-      body: "«Essere» does both jobs: who you are, how you are, and **where** you are. The Spanish reflex to reach for «stare» on location is the trap.",
+      body: "«Essere» covers most of ‹ser› and ‹estar›: who you are, temporary states, and **where** you are. Reaching for «stare» on location is the classic Spanish-speaker trap.",
       examples: [
         { it: "Sono di Madrid.", en: "I'm from Madrid.", es: "Soy de Madrid." },
         { it: "Sono stanca.", en: "I'm tired (f).", es: "Estoy cansada." },
         { it: "Dove sei? — Sono a Roma.", en: "Where are you? — I'm in Rome.", es: "¿Dónde estás? — Estoy en Roma." },
         { it: "Il museo è chiuso.", en: "The museum is closed.", es: "El museo está cerrado." },
       ],
-      tip: "‹Estoy en Roma› → «Sono a Roma»: location is always «essere».",
+      tip: "‹Estoy en Roma› → «Sono a Roma»: location takes «essere».",
       more: {
         label: "Full conjugation",
         body: "Note «è» (is) carries an accent; «e» without one means 'and'. «Sono» is both 'I am' and 'they are': context sorts it out.",
@@ -72,7 +72,7 @@ export const lesson: Lesson = {
     {
       id: "stare-uses",
       kind: "teach",
-      title: "So what is «stare» for?",
+      title: "So what is stare for?",
       body: "Three things: how you're doing, an action in progress, and 'about to'. Outside those, default to «essere».",
       examples: [
         { it: "Come stai? — Sto bene, grazie.", en: "How are you? — I'm fine, thanks.", es: "¿Cómo estás? — Estoy bien." },
@@ -192,7 +192,7 @@ export const lesson: Lesson = {
     {
       id: "present-regular",
       kind: "teach",
-      title: "The present: one «noi» to rule them all",
+      title: "The present: one noi to rule them all",
       body: "Three classes, like Spanish. But ‹-amos/-emos/-imos› collapse into one «-iamo», «tu» always ends in «-i», and some «-ire» verbs slip in **-isc-**: «capisco», «finisco», «preferisco».",
       table: {
         head: ["", "parlare", "prendere", "partire", "capire"],
@@ -226,7 +226,7 @@ export const lesson: Lesson = {
       prompt: "Sorry, I don't understand. (capire)",
       it: "Scusi, non ___.",
       answers: ["capisco"],
-      explain: "«Capire» is an «-isc-» verb, so 'I understand' is «capisco», not «capo».",
+      explain: "«Capire» is an «-isc-» verb, so 'I understand' is «capisco», not ~~capo~~.",
     },
     {
       id: "irregulars",
@@ -247,7 +247,7 @@ export const lesson: Lesson = {
       tip: "In shops, soften ‹quiero› to «vorrei»: «voglio» sounds as blunt as it looks.",
       more: {
         label: "Four more: dare, dire, venire, uscire",
-        body: "«Uscire» (to go out) is the one Spanish speakers miss: it is ‹salir› for people, while «partire» is ‹salir› for trains. «Esco stasera» = I'm going out tonight.",
+        body: "«Uscire» is ‹salir› out of a place (the door, the house, tonight); «partire» is ‹salir› on a journey (trains, trips). «Esco stasera» = I'm going out tonight.",
         table: {
           head: ["", "dare", "dire", "venire", "uscire"],
           rows: [
@@ -264,10 +264,10 @@ export const lesson: Lesson = {
     {
       id: "posso-build",
       kind: "build",
-      prompt: "Can I pay by card?",
-      answer: "Posso pagare con la carta",
+      prompt: "Can I pay in cash?",
+      answer: "Posso pagare in contanti",
       distractors: ["Puoi", "per"],
-      explain: "«Posso» is 'I can'; «puoi» would ask whether *you* can pay.",
+      explain: "«Posso» is 'I can'; «puoi» would ask whether **you** can pay.",
     },
     {
       id: "waiter-listen",
@@ -311,7 +311,7 @@ export const lesson: Lesson = {
       answer: "Stasera voglio uscire con gli amici",
       alt: ["Voglio uscire con gli amici stasera"],
       distractors: ["i", "escire"],
-      explain: "People «uscire» (go out); plural «amici» starts with a vowel, so its article is «gli», not «i».",
+      explain: "Going out is «uscire», not ~~escire~~; «amici» starts with a vowel, so its plural article is «gli», not «i».",
     },
   ],
 };

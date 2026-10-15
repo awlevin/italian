@@ -7,7 +7,7 @@ export const lesson: Lesson = {
   title: "Ho mangiato, sono andato",
   subtitle: "Talking about the past",
   summary:
-    "One past tense covers ‹comí› and ‹he comido›; the catch is choosing «avere» or «essere», and making the participle agree.",
+    "One past tense covers comí and he comido; the catch is choosing avere or essere, and making the participle agree.",
   vocab: [
     { it: "Ho mangiato", en: "I ate / I have eaten", es: "Comí / he comido" },
     { it: "Sono andato / andata", en: "I went (m / f)", es: "Fui / he ido" },
@@ -27,7 +27,7 @@ export const lesson: Lesson = {
     {
       id: "pp-basics",
       kind: "teach",
-      title: "One past for ‹comí› and ‹he comido›",
+      title: "One past for comí and he comido",
       body: "The passato prossimo is built like ‹he comido›: «avere» + participle. But Italians use it for finished actions too, exactly where Spanish says ‹ayer comí›.",
       examples: [
         { it: "Ieri ho mangiato una pizza.", en: "Yesterday I ate a pizza.", es: "Ayer comí una pizza." },
@@ -37,7 +37,7 @@ export const lesson: Lesson = {
       tip: "Translate ‹comí› as «ho mangiato», even with ‹ayer›.",
       more: {
         label: "Regular participles, and the other past",
-        body: "Regular endings: «-are» → «-ato», «-ere» → «-uto», «-ire» → «-ito». Italian does have a ‹comí› tense, the passato remoto («mangiai»), but in most of Italy it lives in books and history. In the north it is almost never spoken; here in Naples and further south you will still hear it in everyday talk. You only need to recognize it.",
+        body: "Regular endings: «-are» → «-ato», «-ere» → «-uto», «-ire» → «-ito». Italian does have a ‹comí› tense, the passato remoto («mangiai»), but in most of Italy it lives in books and history. In the north it is almost never spoken; in parts of the south you will still hear it in everyday talk. You only need to recognize it.",
         table: {
           head: ["infinitive", "participle", "Spanish"],
           rows: [
@@ -56,12 +56,12 @@ export const lesson: Lesson = {
       prompt: "Yesterday I ate at a trattoria.",
       options: [
         "Ieri ho mangiato in una trattoria.",
-        "Ieri mangiai in una trattoria.",
+        "Ieri mangiavo in una trattoria.",
         "Ieri sono mangiato in una trattoria.",
         "Ieri ho mangiando in una trattoria.",
       ],
       answer: 0,
-      explain: "Spoken Italian uses the passato prossimo even with «ieri»; «mangiai» sounds like a novel.",
+      explain: "A finished action takes the passato prossimo, even with «ieri»; «mangiavo» is ‹comía›, 'I was eating'.",
     },
     {
       id: "prenotato-type",

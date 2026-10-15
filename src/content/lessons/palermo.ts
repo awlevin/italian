@@ -53,7 +53,7 @@ export const lesson: Lesson = {
       id: "choice-olio",
       kind: "choice",
       prompt: "You want oil for your bread. You ask for…",
-      options: ["«l'aceto»", "~~l'aceite~~", "«l'olio»"],
+      options: ["l'aceto", "l'aceite", "l'olio"],
       answer: 2,
       explain: "Oil is «olio». «Aceto» is vinegar, so ‹aceite› instincts get you a sour surprise.",
     },
@@ -92,8 +92,8 @@ export const lesson: Lesson = {
     {
       id: "teach-ff-blush",
       kind: "teach",
-      title: "The ones that make people blush",
-      body: "A few false friends are harmless. These are not.",
+      title: "Awkward false friends",
+      body: "These don't just confuse people. The first one can make a whole table blush.",
       table: {
         head: ["Italian", "Means", "Spanish trap"],
         rows: [
@@ -200,7 +200,7 @@ export const lesson: Lesson = {
       prompt: "Your friend says the museum is free on Sundays. Total disbelief:",
       it: "___!",
       answers: ["Ma dai", "Dai"],
-      explain: "«Ma dai!» = no way! «Dai» alone usually pushes ('come on'), so «ma» makes it disbelief.",
+      explain: "«Ma dai!» = no way! «Dai» alone can work too, but it more often means 'come on'.",
     },
     {
       id: "build-negozio",
@@ -215,9 +215,9 @@ export const lesson: Lesson = {
       kind: "choice",
       prompt: "Review: 'Yesterday we went to the market.'",
       it: "Ieri ___ andati al mercato.",
-      options: ["abbiamo", "siamo", "~~abbiamo stati~~"],
+      options: ["abbiamo", "siamo", "stiamo"],
       answer: 1,
-      explain: "Motion verbs like «andare» take «essere», and the participle agrees: «siamo andati».",
+      explain: "Motion verbs like «andare» take «essere», and the participle agrees: «siamo andati». «Stiamo» is ‹estamos› leaking in.",
     },
     {
       id: "type-review-spritz",

@@ -54,7 +54,7 @@ export const lesson: Lesson = {
             ["cappuccino", "espresso + foamed milk"],
             ["latte macchiato", "hot milk + a shot of espresso"],
             ["latte", "a glass of milk!"],
-            ["caffè corretto", "espresso + a shot of grappa"],
+            ["caffè corretto", "espresso + a splash of liqueur, often grappa"],
           ],
         },
       },
@@ -95,10 +95,10 @@ export const lesson: Lesson = {
         { it: "Avete latte di soia?", en: "Do you have soy milk?" },
         { it: "Mi fa un caffè?", en: "Could you make me an espresso?", note: "Very common at the counter." },
       ],
-      tip: "«Vorrei» is ‹quisiera›, and «Avete…?» is ‹¿Tienen…?›: Italian «tenere» only means to hold.",
+      tip: "«Vorrei» is ‹quisiera›, and «Avete…?» is ‹¿Tienen…?›: Italian «tenere» means to hold or keep, not to have.",
       more: {
-        label: "Un, uno, una, un'",
-        body: "Masculine nouns take «un» («un caffè»), but «uno» before s + consonant or z («uno spritz», «uno zabaione»). Feminine nouns take «una» («una birra»), shortened to «un'» before a vowel («un'aranciata»). «Prego» is the Swiss-army word: you're welcome, go ahead, and 'what can I get you?'. «Voglio» (I want) is grammatical but sounds pushy; stick with «vorrei».",
+        label: "Why not voglio?",
+        body: "«Voglio» (I want) is grammatical but sounds pushy from a customer; stick with «vorrei», «prendo» or «per me». Staff often open with «Prego?» or «Mi dica»: that's your cue to order.",
       },
     },
     {
@@ -123,8 +123,8 @@ export const lesson: Lesson = {
     {
       id: "morph-numbers",
       kind: "morph",
-      title: "Numbers you almost know",
-      rule: "Spanish ‹ie› and ‹ue› flatten to «e» and «o», and Spanish ‹ch› often becomes a double t",
+      title: "Numbers and menus you almost know",
+      rule: "The Milano rules again: ‹ie› and ‹ue› flatten to «e» and «o», and ‹ch› becomes «tt».",
       pairs: [
         { es: "siete", it: "sette", en: "seven" },
         { es: "nueve", it: "nove", en: "nine" },
@@ -137,7 +137,7 @@ export const lesson: Lesson = {
       id: "numbers",
       kind: "teach",
       title: "Uno to venti",
-      body: "Most numbers are Spanish with an Italian accent. 11–16 end in «-dici», and 17–19 flip the order: «diciassette» is literally 'ten-and-seven'.",
+      body: "Most numbers are Spanish with an Italian accent. From 11 to 16 the unit comes first and «-dici» last («undici», «sedici»); from 17 the ten comes first, as in Spanish: «diciassette».",
       table: {
         head: ["#", "Italiano", "#", "Italiano"],
         rows: [
@@ -212,7 +212,7 @@ export const lesson: Lesson = {
       kind: "type",
       prompt: "At the till, ask what the total comes to.",
       it: "Quanto ___?",
-      answers: ["fa", "è"],
+      answers: ["fa", "è", "viene"],
       hint: "Two letters: 'how much does it make?'",
       explain:
         "«Quanto fa?» (or «Quant'è?») asks for the total; «Quanto costa?» is for a single item.",
@@ -283,7 +283,7 @@ export const lesson: Lesson = {
       tip: "«Il conto» is ‹la cuenta› with a gender swap: masculine in Italian.",
       more: {
         label: "Water and other table habits",
-        body: "Ask for water and you'll hear «Naturale o frizzante?»: bottled is the norm. Tap water («acqua del rubinetto») is safe and you can ask for it, but it's less common. «Si può?» (Is it OK?) is a handy all-rounder: point at a free chair and ask «Si può?», or try «Si può pagare con la carta?».",
+        body: "Ask for water and you'll hear «Naturale o frizzante?»: bottled is the norm. Tap water («acqua del rubinetto») is safe and you can ask for it, but few people do.",
       },
     },
     {
@@ -298,7 +298,7 @@ export const lesson: Lesson = {
     {
       id: "listen-contorno",
       kind: "listen",
-      text: "Per secondo, volete anche un contorno? Patate al forno o insalata?",
+      text: "Con il secondo volete anche un contorno? Patate al forno o insalata?",
       prompt: "What is the waiter offering?",
       options: [
         "A side with your main: roast potatoes or salad",

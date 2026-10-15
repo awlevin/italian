@@ -7,7 +7,7 @@ export const lesson: Lesson = {
   title: "Mi piace, ci vado, ne voglio due",
   subtitle: "Pronouns, piacere, ci & ne",
   summary:
-    "Piacere is your old friend ‹gustar›; «ci» and «ne» are new, and they're how Italians shop, order and give directions.",
+    "Piacere is your old friend gustar; ci and ne are new, and they're how Italians shop, order and give directions.",
   vocab: [
     { it: "Mi piace / mi piacciono", en: "I like it / I like them", es: "Me gusta / me gustan" },
     { it: "Le piace?", en: "Do you like it? (formal)", es: "¿Le gusta?" },
@@ -43,7 +43,7 @@ export const lesson: Lesson = {
       it: "Mi ___ i limoni di Amalfi.",
       options: ["piacciono", "piace", "piaciono", "piaccio"],
       answer: 0,
-      explain: "«I limoni» is plural, so «piacciono», with a double c like «piace».",
+      explain: "«I limoni» is plural, so «piacciono», with a double c that «piace» doesn't have.",
     },
     {
       id: "indirect",
@@ -63,7 +63,7 @@ export const lesson: Lesson = {
           ["gli", "les", "to them"],
         ],
       },
-      tip: "‹¿Le gusta?› to a stranger is «Le piace?»: same sound, capital L in writing.",
+      tip: "‹¿Le gusta?› to a stranger is «Le piace?»: same word, same job.",
       more: {
         label: "Gli for 'them'",
         body: "In speech, «gli» also means 'to them': «Gli piace il mare» = they like the sea. Formal writing uses «loro» after the verb («Piace loro»), but you'll rarely hear it.",
@@ -136,7 +136,7 @@ export const lesson: Lesson = {
       tip: "Spanish can drop ‹allí›; Italian says «ci» almost every time.",
       more: {
         label: "Ci vuole",
-        body: "«Ci vuole / ci vogliono» means 'it takes': «Ci vogliono due ore per arrivare a Positano» ‹Se tarda dos horas›. «Ci» also means 'us' («ci piace»); context sorts it out.",
+        body: "«Ci vuole / ci vogliono» means 'it takes': «Ci vogliono due ore per arrivare a Positano» ‹Se tardan dos horas en llegar›. «Ci» also means 'us' («ci piace»); context sorts it out.",
       },
     },
     {

@@ -38,7 +38,7 @@ export const lesson: Lesson = {
       tip: "«Andata e ritorno» is ‹ida y vuelta›, and the «binario» is your ‹andén›.",
       more: {
         label: "Stamp it or pay for it",
-        body: "Paper tickets for regional trains have no fixed time, so you must stamp them in the small machine on the platform before you board: «convalidare» (or «obliterare»). Skip it and the «controllore» can fine you on the spot. Digital tickets for a set train, and all Frecciarossa and Italo tickets, are already valid.",
+        body: "Paper tickets for regional trains usually have no fixed time, so you must stamp them in the small machine on the platform before you board: «convalidare» (or «obliterare»). Skip it and the «controllore» can fine you on the spot. Digital tickets for a set train, and all Frecciarossa and Italo tickets, are already valid.",
       },
     },
     {
@@ -145,8 +145,8 @@ export const lesson: Lesson = {
     {
       id: "morph-tens",
       kind: "morph",
-      title: "Tens: ‹-enta› becomes «-anta»",
-      rule: "From 40 up, Spanish ‹-enta› becomes «-anta», and ‹ch› turns into a double t again",
+      title: "Tens: -enta becomes -anta",
+      rule: "From 40 up, Spanish ‹-enta› becomes «-anta», and ‹ch› turns into «tt» again.",
       pairs: [
         { es: "cuarenta", it: "quaranta", en: "40" },
         { es: "cincuenta", it: "cinquanta", en: "50" },
@@ -225,7 +225,7 @@ export const lesson: Lesson = {
       tip: "Spanish ‹derecho› can mean straight, but in Italian right is «destra» and straight is «dritto».",
       more: {
         label: "Metro, bus & taxi",
-        body: "Rome has three metro lines (A, B, C). Tap a contactless card at the gate, or buy a ticket at a «tabaccheria» or a machine. Bus tickets must be stamped on board. Official taxis are white with a meter: take one from a rank and say «Mi porta a…, per favore?».",
+        body: "Rome has three metro lines (A, B, C). Tap a contactless card at the gate, or buy a ticket at a «tabaccheria» or a machine. Paper bus tickets must be stamped on board. Official taxis are white with a meter: take one from a rank and say «Mi porta a…, per favore?».",
       },
     },
     {

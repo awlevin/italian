@@ -10,7 +10,7 @@ export const lesson: Lesson = {
     "Walk into any shop, bar or hotel and handle the first thirty seconds like a local.",
   vocab: [
     { it: "Buongiorno", en: "Good morning / hello (until mid-afternoon)", es: "Buenos días" },
-    { it: "Buonasera", en: "Good evening / hello (afternoon on)", es: "Buenas tardes / noches" },
+    { it: "Buonasera", en: "Good evening / hello (from mid-afternoon)", es: "Buenas tardes / noches" },
     { it: "Salve", en: "Hello (neutral)" },
     { it: "Arrivederci", en: "Goodbye", es: "Hasta luego" },
     { it: "per favore", en: "please", es: "por favor" },
@@ -29,7 +29,7 @@ export const lesson: Lesson = {
       id: "teach-time-of-day",
       kind: "teach",
       title: "Buongiorno until the afternoon",
-      body: "«Buongiorno» is hello all morning. Somewhere between lunch and late afternoon it becomes «buonasera». «Buonanotte» is only for going to bed.",
+      body: "«Buongiorno» works until mid-afternoon; after that, everyone switches to «buonasera». «Buonanotte» is only for going to bed.",
       examples: [
         { it: "Buongiorno!", en: "Good morning! / Hello!", es: "¡Buenos días!" },
         { it: "Buonasera!", en: "Good evening! / Hello!", es: "¡Buenas tardes! / ¡Buenas noches!" },
@@ -45,7 +45,7 @@ export const lesson: Lesson = {
       id: "choice-evening",
       kind: "choice",
       prompt: "It's 6 p.m. You walk into a bakery. You say…",
-      options: ["«Buonanotte!»", "«Buonasera!»", "~~Buona tarde!~~"],
+      options: ["Buonanotte!", "Buonasera!", "Buona tarde!"],
       answer: 1,
       explain: "Evening hello is «buonasera». «Buonanotte» is a goodbye before bed, never a greeting like ‹buenas noches›.",
     },
@@ -73,7 +73,7 @@ export const lesson: Lesson = {
     {
       id: "teach-lei",
       kind: "teach",
-      title: "Lei: Italian ‹usted›",
+      title: "Lei: the Italian usted",
       body: "Formal 'you' is «Lei», literally 'she', with third-person verbs, exactly like ‹usted›. Use it with strangers, staff and anyone older.",
       examples: [
         { it: "Come sta?", en: "How are you? (formal)", es: "¿Cómo está?" },
@@ -91,7 +91,7 @@ export const lesson: Lesson = {
       id: "choice-come-sta",
       kind: "choice",
       prompt: "To the hotel receptionist: 'How are you?'",
-      options: ["«Come stai?»", "~~Come está?~~", "«Come sta?»"],
+      options: ["Come stai?", "Come está?", "Come sta?"],
       answer: 2,
       explain: "Receptionist = stranger = «Lei», so third person: «Come sta?». «Stai» is the tu form.",
     },
@@ -117,7 +117,7 @@ export const lesson: Lesson = {
       tip: "«Prego» is ‹de nada›, ‹adelante› and ‹¿dígame?› in one word.",
       more: {
         label: "Other ways to say 'no problem'",
-        body: "Among friends: «figurati» or «di niente». To someone you call Lei: «si figuri». All mean 'don't mention it'.",
+        body: "«Di niente» works with anyone. Among friends, «figurati»; to someone you call Lei, «si figuri». All mean 'don't mention it'.",
       },
     },
     {
@@ -177,7 +177,7 @@ export const lesson: Lesson = {
       id: "type-piacere-mio",
       kind: "type",
       prompt: "«Piacere, Giulia.» Return it: ‹el gusto es mío›.",
-      answers: ["Piacere mio", "Piacere mio, Giulia"],
+      answers: ["Piacere mio", "Piacere mio, Giulia", "Il piacere è mio"],
       explain: "«Piacere mio» flips the compliment back, just like ‹el gusto es mío›.",
     },
     {
@@ -214,9 +214,9 @@ export const lesson: Lesson = {
       kind: "choice",
       prompt: "An older man asks you for directions in rapid Italian. Best reply?",
       options: [
-        "«Scusa, non capisco.»",
-        "«Scusi, non capisco.»",
-        "~~Mi dispiace, no entiendo.~~",
+        "Scusa, non capisco.",
+        "Scusi, non capisco.",
+        "Mi dispiace, no entiendo.",
       ],
       answer: 1,
       explain: "Older stranger = Lei, so «scusi». And Italian 'understand' is «capire», not ‹entender›.",
@@ -225,7 +225,7 @@ export const lesson: Lesson = {
       id: "type-parla-inglese",
       kind: "type",
       prompt: "To a ticket clerk: ‹¿Habla inglés?›",
-      answers: ["Parla inglese?", "Lei parla inglese?", "Parla l'inglese?"],
+      answers: ["Parla inglese?", "Lei parla inglese?", "Parla l'inglese?", "Lei parla l'inglese?"],
       explain: "Third person for Lei: «parla». English is «inglese», from the ‹-és› → «-ese» pattern.",
     },
   ],

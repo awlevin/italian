@@ -7,7 +7,7 @@ export const lesson: Lesson = {
   title: "Del, nel, al, sul",
   subtitle: "Prepositions that swallow articles",
   summary:
-    "Italian prepositions fuse with articles and split ‹a / en / de› along new lines: learn where you are, where you're going, and when.",
+    "Italian prepositions fuse with articles and split Spanish a, en and de along new lines: learn where you are, where you're going, and when.",
   vocab: [
     { it: "a Roma", en: "in / to Rome (cities)", es: "en / a Roma" },
     { it: "in Italia", en: "in / to Italy (countries, regions)", es: "en / a Italia" },
@@ -48,7 +48,7 @@ export const lesson: Lesson = {
       id: "fusion",
       kind: "teach",
       title: "Preposition + article = one word",
-      body: "Spanish fuses only ‹al› and ‹del›. Italian fuses «di, a, da, in, su» with **every** definite article: «di» becomes «de-», «in» becomes «ne-», the rest stay put, and the article's shape follows.",
+      body: "Spanish fuses only ‹al› and ‹del›. Italian fuses «di», «a», «da», «in» and «su» with **every** definite article.",
       examples: [
         { it: "il bar della stazione", en: "the station bar", es: "el bar de la estación" },
         { it: "Le chiavi sono nella borsa.", en: "The keys are in the bag.", es: "Las llaves están en la bolsa." },
@@ -58,7 +58,7 @@ export const lesson: Lesson = {
       tip: "Build it: «in» + «la» → «nella», «su» + «il» → «sul», «di» + «gli» → «degli».",
       more: {
         label: "The full grid",
-        body: "Where the article starts with l (lo, la, l', le), the l doubles: «della», «nello», «sull'». «Il», «i» and «gli» just attach: «del», «dei», «degli». «Con» and «per» normally stay separate: «con il», «per la».",
+        body: "«Di» turns into «de-» and «in» into «ne-»; the others keep their shape. Where the article starts with l (lo, la, l', le), the l doubles: «della», «nello», «sull'». «Il», «i» and «gli» just attach: «del», «dei», «degli». «Con» and «per» normally stay separate: «con il», «per la».",
         table: {
           head: ["", "il", "lo", "l'", "la", "i", "gli", "le"],
           rows: [
@@ -88,7 +88,7 @@ export const lesson: Lesson = {
         { it: "nel", en: "in + il" },
         { it: "sulla", en: "su + la" },
         { it: "degli", en: "di + gli" },
-        { it: "all'", en: "a + l'" },
+        { it: "allo", en: "a + lo" },
         { it: "dai", en: "da + i" },
       ],
     },
@@ -114,7 +114,7 @@ export const lesson: Lesson = {
       ],
       tip: "Spanish is backwards twice: ‹en Roma› → «a Roma», ‹a Italia› → «in Italia».",
       more: {
-        label: "The bare «in» list",
+        label: "Places with bare in",
         body: "No article: «in centro», «in piazza», «in banca», «in farmacia», «in ufficio», «in albergo», «in montagna», «in vacanza». Add the article only when you mean a specific one: «nella farmacia di fronte». Transport: «in treno», «in macchina», «in aereo», «in bici», but «a piedi». Also fixed with «a»: «a casa», «a teatro», «a scuola», «al mare». Small islands: «a Capri», «a Ischia»; big ones: «in Sicilia», «in Sardegna».",
       },
     },

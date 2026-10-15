@@ -50,7 +50,7 @@ export const lesson: Lesson = {
       id: "morph-diphthongs",
       kind: "morph",
       title: "Flatten the diphthongs",
-      rule: "Spanish ‹ie› shrinks to «e», and ‹ue› to «o». Latin never broke these vowels; Spanish did.",
+      rule: "Spanish ‹ie› shrinks to «e», and ‹ue› to «o». Spanish split these Latin vowels; Italian mostly kept them whole.",
       pairs: [
         { es: "tiempo", it: "tempo", en: "time, weather" },
         { es: "fiesta", it: "festa", en: "party" },
@@ -64,15 +64,15 @@ export const lesson: Lesson = {
       id: "choice-corpo",
       kind: "choice",
       prompt: "Guess the Italian for ‹cuerpo› (body).",
-      options: ["~~cuerpo~~", "~~cuorpo~~", "«corpo»"],
+      options: ["cuerpo", "cuorpo", "corpo"],
       answer: 2,
       explain: "‹ue› flattens to «o». A few words keep a diphthong as «uo» instead («buono», «nuovo», «fuoco», «scuola»), but «o» is the safe bet.",
     },
     {
       id: "morph-tt",
       kind: "morph",
-      title: "‹ch› and ‹ct› go double",
-      rule: "Where Spanish has ‹ch› or ‹ct› from Latin ‹ct›, Italian has «tt».",
+      title: "Spanish ch and ct go double",
+      rule: "Where Spanish has ‹ch› or ‹ct› from Latin ct, Italian has «tt».",
       pairs: [
         { es: "noche", it: "notte", en: "night" },
         { es: "ocho", it: "otto", en: "eight" },
@@ -93,8 +93,8 @@ export const lesson: Lesson = {
     {
       id: "morph-pi-chi-fi",
       kind: "morph",
-      title: "‹pl›, ‹ll›, ‹fl› grow an «i»",
-      rule: "Latin ‹pl›, ‹cl›, ‹fl› became Spanish ‹pl›/‹ll›/‹fl› but Italian «pi», «chi», «fi».",
+      title: "Spanish pl, ll, fl grow an i",
+      rule: "Latin pl, cl, fl became ‹pl›, ‹ll› or ‹fl› in Spanish, but «pi-», «chi-», «fi-» in Italian.",
       pairs: [
         { es: "plaza", it: "piazza", en: "square" },
         { es: "plato", it: "piatto", en: "plate, dish" },
@@ -107,7 +107,7 @@ export const lesson: Lesson = {
     {
       id: "morph-h-f",
       kind: "morph",
-      title: "The silent ‹h› gets its «f» back",
+      title: "The silent h gets its f back",
       rule: "Many Spanish words with a silent ‹h› once started with Latin ‹f›. Italian kept the «f».",
       pairs: [
         { es: "hierro", it: "ferro", en: "iron" },
@@ -133,8 +133,8 @@ export const lesson: Lesson = {
     {
       id: "morph-j",
       kind: "morph",
-      title: "‹j› hides three sounds",
-      rule: "Spanish ‹j› often stands where Italian has «gli», «cchi» or «gg».",
+      title: "Spanish j hides three sounds",
+      rule: "Spanish ‹j› often stands where Italian has «-gli-», «-cchi-» or «-gg-».",
       pairs: [
         { es: "ajo", it: "aglio", en: "garlic" },
         { es: "mejor", it: "meglio", en: "better" },
@@ -155,7 +155,7 @@ export const lesson: Lesson = {
     {
       id: "morph-ta",
       kind: "morph",
-      title: "‹-dad› becomes «-tà»",
+      title: "-dad becomes -tà",
       rule: "Spanish ‹-dad› turns into a stressed «-tà», with the accent written. These nouns never change in the plural.",
       pairs: [
         { es: "ciudad", it: "città", en: "city" },
@@ -169,7 +169,7 @@ export const lesson: Lesson = {
     {
       id: "teach-c-g-sc",
       kind: "teach",
-      title: "Soft before «e» and «i»",
+      title: "Soft before e and i",
       body: "«c», «g» and «sc» go soft before «e» and «i». Add an «h» to make them hard again: the opposite of Spanish ‹ch›.",
       table: {
         head: ["Spelling", "Sounds like", "Example"],
@@ -214,7 +214,7 @@ export const lesson: Lesson = {
         { it: "nono, nonno", en: "ninth, grandfather" },
         { it: "caro, carro", en: "dear or expensive, cart" },
         { it: "sete, sette", en: "thirst, seven" },
-        { it: "pena, penna", en: "pity, pen", note: "Order «penne» with a firm double n. The single-n word is anatomy." },
+        { it: "pena, penna", en: "pity, pen", note: "Order «penne» with a firm double n: with a single n, it's anatomy." },
       ],
       tip: "You already do this once: ‹pero› vs ‹perro›. Italian does it with every consonant.",
       more: {

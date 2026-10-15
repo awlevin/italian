@@ -7,7 +7,7 @@ export const lesson: Lesson = {
   title: "Il, lo, la, gli…",
   subtitle: "Articles & plurals",
   summary:
-    "Spanish ‹el› splits three ways and ‹-s› disappears. Master this and you stop sounding foreign in every noun.",
+    "Spanish el splits three ways and the plural -s disappears. Master this and you stop sounding foreign in every noun.",
   vocab: [
     { it: "il treno, i treni", en: "the train, the trains", es: "el tren, los trenes" },
     { it: "lo zaino, gli zaini", en: "the backpack(s)", es: "la mochila" },
@@ -27,7 +27,7 @@ export const lesson: Lesson = {
     {
       id: "teach-singular-articles",
       kind: "teach",
-      title: "‹el› has three faces",
+      title: "Spanish el has three faces",
       body: "Masculine 'the' is «il» before most consonants, «lo» before s + consonant, z, gn, ps, x and y, and «l'» before a vowel. Feminine is just «la», or «l'» before a vowel.",
       table: {
         head: ["Starts with", "Masculine", "Feminine"],
@@ -39,7 +39,7 @@ export const lesson: Lesson = {
       },
       tip: "‹el› → «il», «lo» or «l'». ‹la› → «la» or «l'».",
       more: {
-        label: "Why «lo»?",
+        label: "Why lo?",
         body: "~~il studente~~ would jam three consonants together, and Italian hates clusters. «Lo» smooths them out. Rarer cases follow the same logic: «lo yogurt», «lo psicologo», «lo gnocco», «lo xilofono».",
       },
     },
@@ -81,7 +81,7 @@ export const lesson: Lesson = {
     {
       id: "teach-noun-plurals",
       kind: "teach",
-      title: "Goodbye, ‹-s›",
+      title: "Goodbye, plural -s",
       body: "Italian plurals change the last vowel instead of adding ‹-s›: «-o» → «-i», «-a» → «-e», and «-e» → «-i» for both genders.",
       examples: [
         { it: "il libro, i libri", en: "the book, the books", es: "el libro, los libros" },
@@ -92,14 +92,14 @@ export const lesson: Lesson = {
       tip: "Never add ‹-s›: «due pizze», not ‹pizzas›.",
       more: {
         label: "Spelling the k sound",
-        body: "Words in «-ca», «-ga» add an «h» to keep the hard sound: «l'amica» → «le amiche», «l'albergo» → «gli alberghi». Same reason Spanish writes ‹que›, not ‹ce›.",
+        body: "Feminine «-ca» and «-ga» add an «h» to keep the hard sound: «l'amica» → «le amiche». Masculine «-co» and «-go» usually do too («l'albergo» → «gli alberghi»), with famous exceptions like «l'amico» → «gli amici». Same reason Spanish writes ‹que›, not ‹ce›.",
       },
     },
     {
       id: "choice-gli-amici",
       kind: "choice",
       prompt: "'The friends' (a group of men):",
-      options: ["~~i amici~~", "«gli amici»", "~~le amici~~"],
+      options: ["i amici", "gli amici", "le amici"],
       answer: 1,
       explain: "Masculine before a vowel takes «gli» in the plural: «l'amico» → «gli amici».",
     },
@@ -108,7 +108,7 @@ export const lesson: Lesson = {
       kind: "type",
       prompt: "Make it plural: «la stazione» →",
       it: "le ___",
-      answers: ["stazioni"],
+      answers: ["stazioni", "le stazioni"],
       explain: "Nouns in «-e» take «-i» in the plural, whatever their gender.",
     },
     {
@@ -152,8 +152,8 @@ export const lesson: Lesson = {
     {
       id: "teach-invariable",
       kind: "teach",
-      title: "Nouns that never change",
-      body: "Words ending in an accented vowel, foreign words and short forms stay the same in the plural. Only the article tells you there's more than one.",
+      title: "Plurals that break the pattern",
+      body: "Words ending in an accented vowel, foreign words and short forms never change: only the article tells you there's more than one. A few others are simply irregular.",
       examples: [
         { it: "il caffè, i caffè", en: "the coffee, the coffees" },
         { it: "la città, le città", en: "the city, the cities" },
@@ -184,7 +184,7 @@ export const lesson: Lesson = {
       id: "teach-gender-traps",
       kind: "teach",
       title: "Genders that switch at the border",
-      body: "Most genders match Spanish. These don't, and the first two are on every breakfast table.",
+      body: "Most genders match Spanish. These don't, and «il latte» is on every breakfast table.",
       table: {
         head: ["Italian", "Spanish", "English"],
         rows: [
@@ -215,7 +215,7 @@ export const lesson: Lesson = {
       id: "choice-problema",
       kind: "choice",
       prompt: "'No problem!' Which is right?",
-      options: ["~~Nessuna problema!~~", "«Nessun problema!»", "~~Nessuno problema!~~"],
+      options: ["Nessuna problema!", "Nessun problema!", "Nessuno problema!"],
       answer: 1,
       explain: "«problema» is masculine, so «nessun problema». «Nessuno» is for «lo» words, «nessuna» for feminine.",
     },
@@ -233,7 +233,7 @@ export const lesson: Lesson = {
       tip: "‹mi habitación› → «la mia camera»: Italian keeps the article Spanish drops.",
       more: {
         label: "Family fine print",
-        body: "The article also returns with affectionate or modified forms: «la mia mamma», «il mio fratello maggiore». «Loro» always takes it: «la loro madre».",
+        body: "The article returns with affectionate forms and diminutives: «la mia mamma», «il mio papà», «la mia sorellina». «Loro» always takes it: «la loro madre».",
       },
     },
     {
@@ -256,9 +256,9 @@ export const lesson: Lesson = {
       kind: "choice",
       prompt: "'I lost my backpack and the keys.' Which is right?",
       options: [
-        "~~Ho perso mio zaino e le chiavi.~~",
-        "~~Ho perso il mio zaino e i chiavi.~~",
-        "«Ho perso il mio zaino e le chiavi.»",
+        "Ho perso mio zaino e le chiavi.",
+        "Ho perso il mio zaino e i chiavi.",
+        "Ho perso il mio zaino e le chiavi.",
       ],
       answer: 2,
       explain: "Possessive takes the article («il mio zaino»), and «chiave» is feminine, so «le chiavi».",
