@@ -40,8 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# private agent state
+# private agent state (also in .git/info/exclude locally; listed here so fresh clones ignore them too)
 .private/
+.agents/
+.claude/
+skills-lock.json
 /test-results/
 /playwright-report/
 /.tmp/

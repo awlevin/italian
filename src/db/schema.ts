@@ -42,18 +42,22 @@ export const itemState = pgTable(
   ],
 );
 
-/** Append-only answer log. Source of truth for streaks and stats. */
+/**
+ * Append-only answer log. Source of truth for streaks and stats.
+ * Keyed by (user, op id): the id is client-generated, so it is only unique
+ * within one user, and one user's ids can never collide with another's.
+ */
 export const answerLog = pgTable(
   "answer_log",
   {
     /** Client-generated op id: makes sync idempotent. */
-    id: text("id").primaryKey(),
+    id: text("id").notNull(),
     userId: text("user_id").notNull(),
     itemId: text("item_id").notNull(),
     correct: boolean("correct").notNull(),
     at: timestamp("at", { withTimezone: true }).notNull(),
   },
-  (t) => [index("answer_log_user_at_idx").on(t.userId, t.at)],
+  (t) => [primaryKey({ columns: [t.userId, t.id] }), index("answer_log_user_at_idx").on(t.userId, t.at)],
 );
 
 export const starredPhrase = pgTable(

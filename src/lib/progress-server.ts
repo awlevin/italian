@@ -7,46 +7,44 @@ import type { Op, Snapshot } from "./sync";
 
 const minutesArray = sql.raw(`ARRAY[${BOX_MINUTES.join(",")}]`);
 
-async function applyOp(userId: string, op: Op) {
+type AnswerOp = Extract<Op, { t: "answer" }>;
+
+/**
+ * Logs one answer and moves its item through the Leitner boxes, in a single
+ * statement: the item only moves when the log insert is new, so a retried op
+ * is a no-op and the two tables can never disagree.
+ */
+function answerQuery(userId: string, op: AnswerOp) {
+  const at = sql`${op.at}::timestamptz`;
+  const hit = op.correct ? 1 : 0; // A first answer lands in box 1 if right, box 0 if wrong.
+  const firstDue = new Date(Date.parse(op.at) + BOX_MINUTES[hit] * 60_000).toISOString();
+  const newBox = op.correct ? sql`LEAST(${itemState.box} + 1, ${MAX_BOX}::int)` : sql`0`;
+  return db.execute(sql`
+    WITH logged AS (
+      INSERT INTO ${answerLog} (user_id, id, item_id, correct, at)
+      VALUES (${userId}, ${op.id}, ${op.itemId}, ${op.correct}::boolean, ${at})
+      ON CONFLICT DO NOTHING
+      RETURNING 1
+    )
+    INSERT INTO ${itemState} (user_id, item_id, box, due_at, correct, wrong, last_at)
+    SELECT ${userId}::text, ${op.itemId}::text, ${hit}::int, ${firstDue}::timestamptz, ${hit}::int, ${1 - hit}::int, ${at}
+    FROM logged
+    ON CONFLICT (user_id, item_id) DO UPDATE SET
+      box = ${newBox},
+      due_at = ${at} + (${minutesArray})[(${newBox}) + 1] * interval '1 minute',
+      correct = ${itemState.correct} + ${hit}::int,
+      wrong = ${itemState.wrong} + ${1 - hit}::int,
+      last_at = GREATEST(${itemState.lastAt}, ${at})`);
+}
+
+function opQuery(userId: string, op: Op) {
   const at = new Date(op.at);
   switch (op.t) {
-    case "answer": {
-      const inserted = await db
-        .insert(answerLog)
-        .values({ id: op.id, userId, itemId: op.itemId, correct: op.correct, at })
-        .onConflictDoNothing()
-        .returning({ id: answerLog.id });
-      if (inserted.length === 0) return; // Already applied.
-      const firstBox = op.correct ? 1 : 0;
-      const newBox = op.correct
-        ? sql`LEAST(${itemState.box} + 1, ${MAX_BOX})`
-        : sql`0`;
-      await db
-        .insert(itemState)
-        .values({
-          userId,
-          itemId: op.itemId,
-          box: firstBox,
-          dueAt: new Date(at.getTime() + BOX_MINUTES[firstBox] * 60_000),
-          correct: op.correct ? 1 : 0,
-          wrong: op.correct ? 0 : 1,
-          lastAt: at,
-        })
-        .onConflictDoUpdate({
-          target: [itemState.userId, itemState.itemId],
-          set: {
-            box: newBox,
-            dueAt: sql`${at.toISOString()}::timestamptz + (${minutesArray})[(${newBox}) + 1] * interval '1 minute'`,
-            correct: sql`${itemState.correct} + ${op.correct ? 1 : 0}`,
-            wrong: sql`${itemState.wrong} + ${op.correct ? 0 : 1}`,
-            lastAt: sql`GREATEST(${itemState.lastAt}, ${at.toISOString()}::timestamptz)`,
-          },
-        });
-      return;
-    }
+    case "answer":
+      return answerQuery(userId, op);
     case "lesson": {
       const completedAt = op.completed ? at : null;
-      await db
+      return db
         .insert(lessonProgress)
         .values({
           userId,
@@ -65,26 +63,23 @@ async function applyOp(userId: string, op: Op) {
             updatedAt: sql`GREATEST(${lessonProgress.updatedAt}, ${at.toISOString()}::timestamptz)`,
           },
         });
-      return;
     }
-    case "star": {
-      if (op.on) {
-        await db
-          .insert(starredPhrase)
-          .values({ userId, phraseId: op.phraseId, createdAt: at })
-          .onConflictDoNothing();
-      } else {
-        await db
-          .delete(starredPhrase)
-          .where(and(eq(starredPhrase.userId, userId), eq(starredPhrase.phraseId, op.phraseId)));
-      }
-    }
+    case "star":
+      return op.on
+        ? db.insert(starredPhrase).values({ userId, phraseId: op.phraseId, createdAt: at }).onConflictDoNothing()
+        : db
+            .delete(starredPhrase)
+            .where(and(eq(starredPhrase.userId, userId), eq(starredPhrase.phraseId, op.phraseId)));
   }
 }
 
-/** Applies ops in order. Every op is idempotent, so a retried batch is safe. */
+/**
+ * Applies ops in order, in one transaction and one round trip to the database.
+ * Every op is idempotent, so a retried batch is safe; a failed batch changes nothing.
+ */
 export async function applyOps(userId: string, ops: Op[]) {
-  for (const op of ops) await applyOp(userId, op);
+  const [first, ...rest] = ops.map((op) => opQuery(userId, op));
+  if (first) await db.batch([first, ...rest]);
 }
 
 export async function getSnapshot(userId: string, timeZone: string): Promise<Snapshot> {

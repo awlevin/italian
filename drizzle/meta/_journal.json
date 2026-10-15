@@ -8,6 +8,13 @@
       "when": 1792085365468,
       "tag": "0000_round_absorbing_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792089349107,
+      "tag": "0001_hesitant_black_knight",
+      "breakpoints": true
     }
   ]
 }
