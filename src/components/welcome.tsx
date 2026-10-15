@@ -61,7 +61,7 @@ export function Welcome() {
           className="space-y-3"
         >
           <h1 className="font-display-wonk text-[clamp(34px,10vw,52px)] leading-[0.98] tracking-[-0.03em] text-balance">
-            Italian, built on the Spanish you already speak.
+            Learn Italian.
           </h1>
           <p className="max-w-[34ch] text-[16px] leading-snug text-ink-2 sm:text-[17px]">
             Ten train stops, Milano to Palermo. Only what differs from Spanish, plus the phrases you need tomorrow.

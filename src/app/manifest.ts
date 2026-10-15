@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Ponte — Italian from Spanish",
+    name: "Ponte — Learn Italian",
     short_name: "Ponte",
-    description: "A fast Italian crash course for Spanish speakers.",
+    description: "Learn Italian.",
     start_url: "/",
     scope: "/",
     display: "standalone",

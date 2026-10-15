@@ -25,8 +25,8 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Ponte — Italian from Spanish", template: "%s · Ponte" },
-  description: "A fast Italian crash course for Spanish speakers. Built for a trip that starts tomorrow.",
+  title: { default: "Ponte — Learn Italian", template: "%s · Ponte" },
+  description: "Learn Italian.",
   applicationName: "Ponte",
   appleWebApp: { capable: true, title: "Ponte", statusBarStyle: "default" },
   formatDetection: { telephone: false },
