@@ -1,26 +1,154 @@
 @import "tailwindcss";
 
+/*
+ * Ponte design tokens.
+ * Palette: cream paper, espresso ink, Aperol accent, olive (right),
+ * Mediterranean sea (Spanish bridge), Amalfi lemon (highlight).
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --paper: #f6efe3;
+  --paper-2: #ede3d2;
+  --card: #fffaf2;
+  --ink: #23190f;
+  --ink-2: #5d4f40;
+  --ink-3: #8f816e;
+  --line: #e3d6c2;
+  --accent: #d9502b;
+  --accent-press: #b8401f;
+  --accent-ink: #fffaf2;
+  --accent-soft: #f8ddcf;
+  --olive: #557236;
+  --olive-soft: #e2e9d2;
+  --sea: #1f5c99;
+  --sea-soft: #dbe6f1;
+  --lemon: #f2c230;
+  --lemon-soft: #fbedbf;
+  --wrong: #b5352b;
+  --wrong-soft: #f6dcd6;
+  --shadow: 35 25 15;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #17120d;
+    --paper-2: #0f0b08;
+    --card: #211a13;
+    --ink: #f3eadc;
+    --ink-2: #c3b5a2;
+    --ink-3: #877967;
+    --line: #382d22;
+    --accent: #f06a3f;
+    --accent-press: #d9552c;
+    --accent-ink: #1a110a;
+    --accent-soft: #3d2216;
+    --olive: #a3c06f;
+    --olive-soft: #263020;
+    --sea: #86b6ea;
+    --sea-soft: #182838;
+    --lemon: #f2c94c;
+    --lemon-soft: #3a3016;
+    --wrong: #f07a6c;
+    --wrong-soft: #3a1c18;
+    --shadow: 0 0 0;
+    color-scheme: dark;
   }
 }
 
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-press: var(--accent-press);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-olive: var(--olive);
+  --color-olive-soft: var(--olive-soft);
+  --color-sea: var(--sea);
+  --color-sea-soft: var(--sea-soft);
+  --color-lemon: var(--lemon);
+  --color-lemon-soft: var(--lemon-soft);
+  --color-wrong: var(--wrong);
+  --color-wrong-soft: var(--wrong-soft);
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-serif, Georgia, serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+  --shadow-card: 0 1px 0 rgb(var(--shadow) / 0.04), 0 8px 24px -12px rgb(var(--shadow) / 0.18);
+  --shadow-lift: 0 2px 0 rgb(var(--shadow) / 0.06), 0 18px 40px -16px rgb(var(--shadow) / 0.3);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  background: var(--paper);
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  text-rendering: optimizeLegibility;
+}
+
+/* Paper grain: barely-there noise so flat cream reads as paper. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.28  0 0 0 0 0.2  0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@media (prefers-color-scheme: dark) {
+  body::before {
+    mix-blend-mode: screen;
+    opacity: 0.18;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 50, "WONK" 0;
+}
+
+.font-display-wonk {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+}
+
+/* Italian inline text: a lemon highlighter stroke under the word. */
+.it-mark {
+  background-image: linear-gradient(transparent 58%, var(--lemon-soft) 58%, var(--lemon-soft) 92%, transparent 92%);
+  border-radius: 2px;
+  padding-inline: 0.08em;
+  margin-inline: -0.08em;
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--sea);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+::selection {
+  background: var(--lemon-soft);
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
