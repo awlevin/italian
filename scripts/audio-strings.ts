@@ -6,11 +6,9 @@
 import { course } from "../src/content/course";
 import { phrasebook } from "../src/content/phrasebook";
 import type { Step } from "../src/content/types";
-import { audioKey, plain } from "../src/lib/text";
+import { audioKey, MARKUP, plain, sayable } from "../src/lib/text";
 
 // Mirrors src/components/ui/rich.tsx. Keep in sync: only these spans get a speak button.
-const TOKEN = /(«[^»]+»|‹[^›]+›|~~[^~]+~~|\*\*[^*]+\*\*)/g;
-const sayable = (it: string) => /[aeiouàèéìíòóùú]/i.test(it) && !/^-|-$/.test(it.trim());
 
 export interface AudioString {
   key: string;
@@ -23,7 +21,7 @@ export interface AudioString {
 /** Sayable «…» spans exactly as <Rich> would render them. */
 function spans(s: string): string[] {
   return s
-    .split(TOKEN)
+    .split(MARKUP)
     .filter((p) => p.startsWith("«"))
     .map((p) => p.slice(1, -1))
     .filter(sayable);

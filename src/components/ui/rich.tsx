@@ -2,18 +2,16 @@
 
 import { Fragment } from "react";
 import { speak } from "@/lib/audio";
+import { MARKUP, sayable } from "@/lib/text";
 
-/** Spelling fragments («tt», «-zione», «c») are marked but not spoken. */
-const sayable = (it: string) => /[aeiouàèéìíòóùú]/i.test(it) && !/^-|-$/.test(it.trim());
 
-const TOKEN = /(«[^»]+»|‹[^›]+›|~~[^~]+~~|\*\*[^*]+\*\*)/g;
 
 /**
  * Renders inline markup: «Italian» (tap to hear), ‹Spanish›, ~~wrong~~, **bold**.
  * Italian spans read as highlighted ink; Spanish reads as sea-blue italics.
  */
 export function Rich({ text, speakable = true }: { text: string; speakable?: boolean }) {
-  const parts = text.split(TOKEN);
+  const parts = text.split(MARKUP);
   return (
     <>
       {parts.map((p, i) => {

@@ -1,3 +1,9 @@
+/** Inline markup tokens: «Italian», ‹Spanish›, ~~wrong~~, **bold**. */
+export const MARKUP = /(«[^»]+»|‹[^›]+›|~~[^~]+~~|\*\*[^*]+\*\*)/g;
+
+/** Spelling fragments («tt», «-zione», «c») are marked but not spoken. */
+export const sayable = (it: string) => /[aeiouàèéìíòóùú]/i.test(it) && !/^-|-$/.test(it.trim());
+
 /** Strip inline markup to plain text. */
 export const plain = (s: string) =>
   s.replace(/[«»‹›]/g, "").replace(/\*\*|~~/g, "").replace(/\s+/g, " ").trim();
