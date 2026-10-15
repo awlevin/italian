@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "typecheck": "next typegen && tsc --noEmit",
     "audio:gen": "tsx scripts/gen-audio.ts",
-    "audio:check": "tsx scripts/check-audio.ts"
+    "audio:check": "tsx scripts/check-audio.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.15",
@@ -36,7 +37,8 @@
     "eslint-config-next": "16.4.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.5"
   },
   "packageManager": "pnpm@10.34.5"
 }
