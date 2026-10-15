@@ -42,3 +42,5 @@ next-env.d.ts
 
 # private agent state
 .private/
+/test-results/
+/playwright-report/

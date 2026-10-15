@@ -9,7 +9,9 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "audio:gen": "tsx scripts/gen-audio.ts",
+    "audio:check": "tsx scripts/check-audio.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.15",
@@ -23,6 +25,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
