@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef } from "react";
 import type { Phase, Verdict } from "@/components/exercises/types";
 import { Button } from "@/components/ui/button";
 import { IconCheck, IconX } from "@/components/ui/icons";
@@ -19,7 +20,10 @@ export function Footer({
   explain,
   primary,
   seed,
+  onSheetHeight,
 }: {
+  /** Reports the verdict sheet's height so the page can keep content clear of it. */
+  onSheetHeight?: (h: number) => void;
   /** Varies the praise word between answers, deterministically. */
   seed: number;
   phase: Phase;
@@ -31,6 +35,15 @@ export function Footer({
   const ok = phase === "correct";
   const words = ok ? PRAISE : OOPS;
   const word = words[(seed * 7 + 3) % words.length];
+  const sheet = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = sheet.current;
+    if (!answered || !el || !onSheetHeight) return;
+    const ro = new ResizeObserver(() => onSheetHeight(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [answered, onSheetHeight]);
 
   return (
     <div className="relative z-20">
@@ -38,6 +51,7 @@ export function Footer({
         {answered && (
           <motion.div
             key="sheet"
+            ref={sheet}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}

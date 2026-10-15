@@ -10,8 +10,10 @@ import { isExercise } from "@/content/types";
 import { useDispatch, useProgress, useProgressReady } from "@/components/progress/provider";
 import { Button } from "@/components/ui/button";
 import { IconArrowLeft, IconArrowRight } from "@/components/ui/icons";
+import { Rich } from "@/components/ui/rich";
 import { SpeakButton } from "@/components/ui/speak-button";
 import { sfx } from "@/lib/sfx";
+import { Rail } from "./rail";
 import { Session, type SessionItem, type SessionResult } from "./session";
 import { Ticket } from "./ticket";
 
@@ -116,7 +118,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
               transition={{ delay: 0.2 }}
               className="max-w-[34ch] text-[17px] leading-relaxed text-ink-2 text-pretty"
             >
-              {lesson.summary}
+              <Rich text={lesson.summary} />
             </motion.p>
             <motion.div
               initial={{ opacity: 0 }}
@@ -160,9 +162,14 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col px-5 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
         >
           <div className="space-y-2 text-center">
+            {/* The train from the lesson rolls the last stretch into the station. */}
+            <div className="mx-auto flex max-w-[13rem] pr-4 pb-3" aria-hidden>
+              <Rail value={1} from={0.5} />
+            </div>
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
               className="font-mono text-[11px] font-bold tracking-[0.2em] text-olive uppercase"
             >
               Arrivati a {lesson.city}
@@ -170,7 +177,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             <motion.h1
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 22 }}
+              transition={{ type: "spring", stiffness: 300, damping: 22, delay: 0.55 }}
               className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]"
             >
               Ben fatto!
@@ -192,15 +199,28 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             className="space-y-3"
           >
             <h2 className="font-mono text-[11px] font-bold tracking-[0.18em] text-ink-3 uppercase">Words from this stop</h2>
-            <ul className="divide-y divide-line/70 rounded-2xl border border-line bg-card px-4">
-              {lesson.vocab.map((v) => (
-                <li key={v.it} className="flex items-center gap-3 py-2.5">
+            <ul className="divide-y divide-line/70 rounded-2xl border border-line bg-card px-4 shadow-card">
+              {lesson.vocab.map((v, i) => (
+                <motion.li
+                  key={v.it}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.6 + Math.min(i, 8) * 0.04 }}
+                  className="flex items-center gap-3 py-2.5"
+                >
                   <SpeakButton text={v.it} size="sm" />
-                  <span className="flex-1 font-semibold" lang="it">
-                    {v.it}
+                  <span className="min-w-0 flex-1 leading-tight">
+                    <span className="block font-semibold text-ink" lang="it">
+                      {v.it}
+                    </span>
+                    {v.es && (
+                      <span className="block text-[13px] text-sea italic" lang="es">
+                        {v.es}
+                      </span>
+                    )}
                   </span>
-                  <span className="text-right text-[14px] text-ink-2">{v.en}</span>
-                </li>
+                  <span className="max-w-[45%] text-right text-[14px] leading-snug text-ink-2">{v.en}</span>
+                </motion.li>
               ))}
             </ul>
           </motion.section>
@@ -209,7 +229,8 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.7 }}
-            className="sticky bottom-0 mt-8 space-y-2 bg-gradient-to-t from-paper via-paper to-transparent pt-6 pb-[env(safe-area-inset-bottom)]"
+            className="sticky bottom-0 mt-8 space-y-2 pt-6 pb-[env(safe-area-inset-bottom)]"
+            style={{ background: "linear-gradient(to top, var(--paper) 75%, transparent)" }}
           >
             {next ? (
               <Button size="lg" block onClick={() => router.push(`/lesson/${next.id}`)}>

@@ -51,6 +51,12 @@ export const sfx = {
     tone(185, 0.07, 0.26, 0.06, "sine");
     navigator.vibrate?.(30);
   },
+  /** A pair clicks into place. Each match climbs one step of a major scale. */
+  match(n = 0) {
+    if (!ready()) return;
+    const scale = [659, 740, 831, 880, 988, 1109];
+    tone(scale[Math.min(n, scale.length - 1)], 0, 0.16, 0.05, "triangle");
+  },
   tap() {
     if (!ready()) return;
     tone(1400, 0, 0.05, 0.025, "sine");

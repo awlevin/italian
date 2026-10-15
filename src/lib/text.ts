@@ -1,3 +1,5 @@
+import { overlap } from "./diff";
+
 /** Inline markup tokens: «Italian», ‹Spanish›, ~~wrong~~, **bold**. */
 export const MARKUP = /(«[^»]+»|‹[^›]+›|~~[^~]+~~|\*\*[^*]+\*\*)/g;
 
@@ -38,7 +40,10 @@ export function gradeTyped(input: string, answers: string[]): { grade: Grade; ma
   if (exact) return { grade: "exact", match: exact };
   const loose = answers.find((a) => fold(a) === fold(input));
   if (loose) return { grade: "accent", match: loose };
-  return { grade: "wrong", match: answers[0] };
+  // Compare a miss against the accepted answer it came closest to.
+  const typed = fold(input);
+  const closest = answers.reduce((best, a) => (overlap(typed, fold(a)) > overlap(typed, fold(best)) ? a : best));
+  return { grade: "wrong", match: closest };
 }
 
 /** Stable short hash (cyrb53) for audio file names. Same in Node and browser. */

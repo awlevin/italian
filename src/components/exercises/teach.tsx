@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Example, Table as TableT, TeachStep } from "@/content/types";
 import { IconBridge, IconChevronDown } from "@/components/ui/icons";
 import { Rich } from "@/components/ui/rich";
@@ -37,31 +37,42 @@ export function ExampleRow({ ex, i = 0 }: { ex: Example; i?: number }) {
 
 export function DataTable({ table }: { table: TableT }) {
   return (
-    <div className="-mx-1 overflow-x-auto">
-      <table className="w-full border-separate border-spacing-0 text-left text-[14.5px]">
-        {table.caption && <caption className="mb-2 text-left text-[13px] text-ink-3">{table.caption}</caption>}
-        <thead>
-          <tr>
-            {table.head.map((h, i) => (
-              <th key={i} className="border-b-2 border-line px-2 pb-1.5 font-mono text-[11px] font-bold tracking-[0.1em] text-ink-3 uppercase">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {table.rows.map((r, i) => (
-            <tr key={i}>
-              {r.map((c, j) => (
-                <td key={j} className={`border-b border-line/70 px-2 py-2 align-top ${j === 0 ? "text-ink-2" : "text-ink"}`}>
-                  <Rich text={c} />
-                </td>
+    <figure className="space-y-2">
+      {table.caption && <figcaption className="text-[13px] text-ink-3">{table.caption}</figcaption>}
+      {/* Wide tables scroll inside their own frame, never the page. */}
+      <div className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+        <table className="w-full border-separate border-spacing-0 text-left text-[14.5px]">
+          <thead>
+            <tr>
+              {table.head.map((h, i) => (
+                <th
+                  key={i}
+                  className="border-b-2 border-line py-1.5 pr-4 font-mono text-[11px] font-bold tracking-[0.1em] whitespace-nowrap text-ink-3 uppercase last:pr-0"
+                >
+                  {h}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {table.rows.map((r, i) => (
+              <tr key={i}>
+                {r.map((c, j) => (
+                  <td
+                    key={j}
+                    className={`border-b border-line/70 py-2.5 pr-4 align-top leading-snug last:pr-0 [&_.it-mark]:whitespace-nowrap ${
+                      j === 0 ? "min-w-[5.5rem] text-ink-2" : "text-ink"
+                    }`}
+                  >
+                    <Rich text={c} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </figure>
   );
 }
 
@@ -79,17 +90,24 @@ export function Tip({ text }: { text: string }) {
 
 export function More({ label, children }: { label: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
   return (
-    <div className="rounded-2xl border border-line">
+    <div ref={box} className="scroll-mt-20 scroll-mb-32 rounded-2xl border border-line bg-card/60">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[15px] font-semibold text-ink-2 hover:text-ink"
+        className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold text-ink-2 hover:text-ink"
       >
-        {label}
-        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ type: "spring", stiffness: 400, damping: 28 }}>
-          <IconChevronDown size={18} />
+        <span>
+          <Rich text={label} speakable={false} />
+        </span>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ type: "spring", stiffness: 400, damping: 28 }}
+          className="grid size-7 shrink-0 place-items-center rounded-full bg-paper-2 text-ink-3"
+        >
+          <IconChevronDown size={16} />
         </motion.span>
       </button>
       <AnimatePresence initial={false}>
@@ -99,9 +117,10 @@ export function More({ label, children }: { label: string; children: React.React
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            onAnimationComplete={() => open && box.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })}
             className="overflow-hidden"
           >
-            <div className="space-y-3 px-4 pb-4 text-[15.5px] leading-relaxed text-ink-2">{children}</div>
+            <div className="space-y-3 px-4 pb-4 text-[15.5px] leading-relaxed text-ink-2 text-pretty">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -109,15 +128,26 @@ export function More({ label, children }: { label: string; children: React.React
   );
 }
 
+/** Body copy split into paragraphs on blank lines. */
+function Paragraphs({ text, className }: { text: string; className?: string }) {
+  return text
+    .split(/\n\s*\n/)
+    .map((p, i) => (
+      <p key={i} className={className}>
+        <Rich text={p.trim()} />
+      </p>
+    ));
+}
+
 export function Teach({ step }: { step: TeachStep }) {
   return (
     <div className="space-y-5">
       <div className="space-y-2.5">
         <p className="font-mono text-[11px] font-bold tracking-[0.16em] text-accent uppercase">New</p>
-        <h2 className="font-display text-[30px] leading-[1.1] tracking-[-0.02em] text-ink text-balance">{step.title}</h2>
-        <p className="text-[17px] leading-relaxed text-ink-2 text-pretty">
-          <Rich text={step.body} />
-        </p>
+        <h2 className="font-display text-[30px] leading-[1.1] tracking-[-0.02em] text-ink text-balance">
+          <Rich text={step.title} speakable={false} />
+        </h2>
+        <Paragraphs text={step.body} className="text-[17px] leading-relaxed text-ink-2 text-pretty" />
       </div>
       {step.tip && <Tip text={step.tip} />}
       {step.examples && step.examples.length > 0 && (
@@ -130,9 +160,7 @@ export function Teach({ step }: { step: TeachStep }) {
       {step.table && <DataTable table={step.table} />}
       {step.more && (
         <More label={step.more.label}>
-          <p>
-            <Rich text={step.more.body} />
-          </p>
+          <Paragraphs text={step.more.body} />
           {step.more.table && <DataTable table={step.more.table} />}
         </More>
       )}
