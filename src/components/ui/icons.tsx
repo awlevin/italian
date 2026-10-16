@@ -143,3 +143,10 @@ export const IconList = (p: P) => (
     <circle cx="5" cy="17.5" r="1.25" fill="currentColor" />
   </Svg>
 );
+export const IconDownload = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 4v11" />
+    <path d="M7.5 10.5 12 15l4.5-4.5" />
+    <path d="M5 19.5h14" />
+  </Svg>
+);

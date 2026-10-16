@@ -1,15 +1,25 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { createContext, use, useEffect, useMemo, useSyncExternalStore } from "react";
+import { initOffline, registerServiceWorker } from "@/lib/offline";
 import { emptySnapshot, type OpInput, type Snapshot } from "@/lib/sync";
+import { useUserId } from "../auth-gate";
 import { ProgressStore, type SyncStatus } from "./store";
 
 const StoreContext = createContext<ProgressStore | null>(null);
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
-  const { isLoaded, userId } = useAuth();
-  const store = useMemo(() => (isLoaded && userId ? new ProgressStore(userId) : null), [isLoaded, userId]);
+  const { ready, userId } = useUserId();
+  const store = useMemo(() => (ready && userId ? new ProgressStore(userId) : null), [ready, userId]);
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
+
+  // Keep the app saved for offline use once someone is signed in.
+  useEffect(() => {
+    if (userId) void initOffline();
+  }, [userId]);
 
   useEffect(() => {
     if (!store) return;

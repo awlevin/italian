@@ -29,7 +29,11 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // The service worker must never be served stale, or a deploy could strand old clients.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }] },
+    ];
   },
   turbopack: {
     rules: {

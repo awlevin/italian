@@ -6,6 +6,7 @@ import { useState } from "react";
 import { itemById, lines, type LineId } from "@/content/course";
 import type { Lesson } from "@/content/types";
 import { dueItemIds, learnedCount, streak } from "@/lib/stats";
+import { OfflineCard } from "./offline-card";
 import { useProgress, useProgressReady } from "./progress/provider";
 import { ButtonLink } from "./ui/button";
 import { IconArrowRight, IconCheck, IconRepeat, IconTrain } from "./ui/icons";
@@ -55,6 +56,7 @@ export function Journey() {
           <LineView lessons={line.lessons} />
         </motion.div>
       </AnimatePresence>
+      <OfflineCard />
     </div>
   );
 }
