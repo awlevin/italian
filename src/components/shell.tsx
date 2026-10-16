@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { itemById } from "@/content/course";
+import { useOnline } from "@/lib/offline";
 import { dueItemIds } from "@/lib/stats";
 import type { SyncStatus } from "./progress/store";
 import { useProgress, useSyncStatus } from "./progress/provider";
@@ -51,7 +52,8 @@ const BADGE: Partial<Record<SyncStatus, { label: string; title: string; Icon: ty
 };
 
 function SyncBadge() {
-  const status = useCalmStatus(useSyncStatus());
+  const synced = useSyncStatus();
+  const status = useCalmStatus(useOnline() ? synced : "offline");
   const b = BADGE[status];
   return (
     <span role="status" aria-live="polite" className="flex min-w-0 justify-end">
