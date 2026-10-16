@@ -4,19 +4,21 @@ import { AnimatePresence, motion } from "motion/react";
 import { download, useOfflineState, useOnline } from "@/lib/offline";
 import { Button } from "./ui/button";
 import { IconCheck, IconCloudOff, IconDownload } from "./ui/icons";
+import { useT } from "@/lib/locale";
 
 /** Saves every lesson and audio clip so the app works on planes and trains. */
 export function OfflineCard() {
   const state = useOfflineState();
   const online = useOnline();
+  const t = useT();
   if (state.phase === "unsupported" || state.phase === "checking") return null;
 
   const pct = state.phase === "downloading" ? state.done / Math.max(1, state.total) : state.phase === "ready" ? 1 : 0;
   const { title, sub } =
     state.phase === "ready"
-      ? { title: "Ready for your trip", sub: "Every lesson and clip works offline" }
+      ? { title: t("Ready for your trip", "Pronto per il viaggio"), sub: "Every lesson and clip works offline" }
       : state.phase === "downloading"
-        ? { title: "Downloading…", sub: `${Math.round(pct * 100)}% · keep the app open` }
+        ? { title: t("Downloading…", "Scaricando…"), sub: `${Math.round(pct * 100)}% · keep the app open` }
         : !online
           ? { title: "Offline", sub: `Lessons work. ${state.audioMissing} clips use the phone's voice until you download` }
           : state.phase === "error"
@@ -49,7 +51,7 @@ export function OfflineCard() {
         </span>
         {(state.phase === "idle" || state.phase === "error") && online && (
           <Button size="md" onClick={() => void download()} className="shrink-0">
-            {state.phase === "error" ? "Retry" : "Download"}
+            {state.phase === "error" ? t("Retry", "Riprova") : t("Download", "Scarica")}
           </Button>
         )}
       </div>

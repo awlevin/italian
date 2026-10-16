@@ -11,6 +11,7 @@ import { dueItemIds } from "@/lib/stats";
 import type { SyncStatus } from "./progress/store";
 import { useProgress, useSyncStatus } from "./progress/provider";
 import { IconBook, IconCloud, IconCloudCheck, IconCloudOff, IconDevice, IconRepeat, IconTrain } from "./ui/icons";
+import { useT } from "@/lib/locale";
 
 /**
  * Sync status with the jitter taken out: quick saves never show "Saving",
@@ -84,9 +85,9 @@ function SyncBadge() {
 }
 
 const TABS = [
-  { href: "/", label: "Lezioni", Icon: IconTrain },
-  { href: "/review", label: "Ripasso", Icon: IconRepeat },
-  { href: "/phrasebook", label: "Frasario", Icon: IconBook },
+  { href: "/", en: "Lessons", it: "Lezioni", Icon: IconTrain },
+  { href: "/review", en: "Review", it: "Ripasso", Icon: IconRepeat },
+  { href: "/phrasebook", en: "Phrasebook", it: "Frasario", Icon: IconBook },
 ] as const;
 
 /** True while a text field has focus on a touch device (the keyboard is up). */
@@ -113,6 +114,7 @@ function TabBar() {
   const progress = useProgress();
   const due = dueItemIds(progress).filter((id) => itemById.has(id)).length;
   const typing = useTyping();
+  const t = useT();
 
   return (
     <motion.nav
@@ -123,7 +125,7 @@ function TabBar() {
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
     >
       <div className="pointer-events-auto flex w-full max-w-[22rem] gap-1 rounded-full border border-line bg-card/85 p-1.5 shadow-lift backdrop-blur-xl backdrop-saturate-150">
-        {TABS.map(({ href, label, Icon }) => {
+        {TABS.map(({ href, en, it, Icon }) => {
           const active = href === "/" ? path === "/" : path.startsWith(href);
           const badge = href === "/review" && due > 0;
           return (
@@ -143,7 +145,7 @@ function TabBar() {
                 />
               )}
               <Icon size={18} className="relative shrink-0" />
-              <span className="relative">{label}</span>
+              <span className="relative">{t(en, it)}</span>
               {badge && (
                 <motion.span
                   key={due}

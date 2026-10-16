@@ -21,13 +21,15 @@ export interface Line {
   id: LineId;
   /** Italian name, shown on the switch. */
   it: string;
+  /** Short English name, for the line switch. */
+  short: string;
   en: string;
   lessons: Lesson[];
 }
 
 export const lines: Line[] = [
-  { id: "corso", it: "Il corso", en: "Grammar & sounds", lessons: course },
-  { id: "viaggio", it: "Il mio viaggio", en: "Phrases for each stop of the trip", lessons: trip },
+  { id: "corso", it: "Il corso", short: "Course", en: "Grammar & sounds", lessons: course },
+  { id: "viaggio", it: "Il mio viaggio", short: "My trip", en: "Phrases for each stop of the trip", lessons: trip },
 ];
 
 export const allLessons: Lesson[] = lines.flatMap((l) => l.lessons);

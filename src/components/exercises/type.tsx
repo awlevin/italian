@@ -12,6 +12,7 @@ import { gradeTyped, plain } from "@/lib/text";
 import { Prompt, Sentence } from "./prompt";
 import type { ExerciseProps } from "./types";
 import { AFTER_CHIME_MS, useLater } from "./use-later";
+import { useT } from "@/lib/locale";
 
 const ACCENTS = ["à", "è", "é", "ì", "ò", "ù"];
 
@@ -85,6 +86,7 @@ export function Correction({ attempt, answer }: { attempt: string; answer: strin
 
 export function TypeAnswer({ step, phase, setGrader }: ExerciseProps<TypeStep>) {
   const [value, setValue] = useState("");
+  const t = useT();
   const [hint, setHint] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const locked = phase !== "answering";
@@ -165,7 +167,7 @@ export function TypeAnswer({ step, phase, setGrader }: ExerciseProps<TypeStep>) 
             autoCapitalize="off"
             spellCheck={false}
             enterKeyHint="done"
-            placeholder="Scrivi in italiano…"
+            placeholder={t("Type in Italian…", "Scrivi in italiano…")}
             aria-label="Your answer"
             className={`h-14 w-full bg-transparent text-[19px] text-ink outline-none placeholder:text-ink-3/70 disabled:opacity-100 ${showFix ? "text-transparent" : ""}`}
           />

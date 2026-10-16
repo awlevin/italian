@@ -17,11 +17,13 @@ import { LessonPlan, type PlanRow } from "./plan";
 import { Rail } from "./rail";
 import { Session, type SessionItem, type SessionResult } from "./session";
 import { Ticket } from "./ticket";
+import { useT } from "@/lib/locale";
 
 type Stage = "intro" | "run" | "done";
 
 export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const ready = useProgressReady();
+  const t = useT();
   const progress = useProgress();
   const dispatch = useDispatch();
   const router = useRouter();
@@ -155,7 +157,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             {resumeAt > 0 ? (
               <>
                 <Button size="lg" block onClick={() => begin(resumeAt)} disabled={!ready}>
-                  Riprendi · card {resumeAt + 1} of {lesson.steps.length}
+                  {t("Resume", "Riprendi")} · card {resumeAt + 1} of {lesson.steps.length}
                 </Button>
                 <Button size="md" variant="ghost" block onClick={() => begin(0)}>
                   Start from the beginning
@@ -163,7 +165,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
               </>
             ) : (
               <Button size="lg" block onClick={() => begin(0)} disabled={!ready}>
-                {saved?.completedAt ? "Ride again" : "Partenza!"} <IconArrowRight size={20} />
+                {saved?.completedAt ? "Ride again" : t("Start", "Partenza!")} <IconArrowRight size={20} />
               </Button>
             )}
             <Button size="md" variant="ghost" block onClick={() => setPlanOpen(true)}>
@@ -215,7 +217,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
               transition={{ type: "spring", stiffness: 300, damping: 22, delay: 0.55 }}
               className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]"
             >
-              Ben fatto!
+              {t("Well done!", "Ben fatto!")}
             </motion.h1>
           </div>
 
