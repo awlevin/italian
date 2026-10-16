@@ -10,7 +10,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "typecheck": "next typegen && tsc --noEmit",
-    "audio:gen": "tsx scripts/gen-audio.ts",
+    "audio:gen": "NODE_USE_ENV_PROXY=1 tsx scripts/gen-audio.ts",
     "audio:check": "tsx scripts/check-audio.ts",
     "content:lint": "tsx scripts/lint-content.ts",
     "test": "vitest run",

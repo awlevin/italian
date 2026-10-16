@@ -69,15 +69,22 @@ const MANIFEST = join(ROOT, "src/content/audio-manifest.json");
 const API = "https://api.elevenlabs.io";
 
 config({ path: join(ROOT, ".env"), quiet: true });
+/**
+ * Locally the key comes from .env. In a cloud session it is a network secret:
+ * the egress proxy adds the credential, so the script sends none of its own
+ * (ElevenLabs rejects a request that carries both kinds of header).
+ */
 const API_KEY = process.env.ELEVENLABS_API_KEY;
+const PROXIED = !API_KEY && Boolean(process.env.HTTPS_PROXY ?? process.env.https_proxy);
 
 class FatalError extends Error {}
 
 async function api(path: string, init: RequestInit = {}) {
-  if (!API_KEY) throw new FatalError("ELEVENLABS_API_KEY is not set (expected in .env).");
+  if (!API_KEY && !PROXIED)
+    throw new FatalError("ELEVENLABS_API_KEY is not set (expected in .env), and no HTTPS proxy is set to inject it.");
   return fetch(`${API}${path}`, {
     ...init,
-    headers: { "xi-api-key": API_KEY, "content-type": "application/json", ...init.headers },
+    headers: { ...(API_KEY && { "xi-api-key": API_KEY }), "content-type": "application/json", ...init.headers },
   });
 }
 
