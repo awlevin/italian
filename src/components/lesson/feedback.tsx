@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import type { Phase, Verdict } from "@/components/exercises/types";
 import { Button } from "@/components/ui/button";
-import { IconCheck, IconX } from "@/components/ui/icons";
+import { IconArrowLeft, IconCheck, IconX } from "@/components/ui/icons";
 import { Rich } from "@/components/ui/rich";
 
 const PRAISE = ["Esatto!", "Perfetto!", "Giusto!", "Bravo!", "Ottimo!", "Benissimo!", "Proprio così!"];
@@ -21,7 +21,10 @@ export function Footer({
   primary,
   seed,
   onSheetHeight,
+  back,
 }: {
+  /** Steps back to the previous card. Hidden on the first one. */
+  back?: () => void;
   /** Reports the verdict sheet's height so the page can keep content clear of it. */
   onSheetHeight?: (h: number) => void;
   /** Varies the praise word between answers, deterministically. */
@@ -93,7 +96,12 @@ export function Footer({
         )}
       </AnimatePresence>
 
-      <div className="relative mx-auto max-w-xl px-5 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+      <div className="relative mx-auto flex max-w-xl gap-2.5 px-5 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+        {back && (
+          <Button size="lg" variant="secondary" onClick={back} aria-label="Previous card" className="w-14 shrink-0 !px-0">
+            <IconArrowLeft size={22} />
+          </Button>
+        )}
         <AnimatePresence mode="wait" initial={false}>
           {primary && (
             <motion.div
@@ -102,6 +110,7 @@ export function Footer({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.16 }}
+              className="min-w-0 flex-1"
             >
               <Button
                 size="lg"

@@ -129,7 +129,7 @@ export function More({ label, children }: { label: string; children: React.React
 }
 
 /** Body copy split into paragraphs on blank lines. */
-function Paragraphs({ text, className }: { text: string; className?: string }) {
+export function Paragraphs({ text, className }: { text: string; className?: string }) {
   return text
     .split(/\n\s*\n/)
     .map((p, i) => (

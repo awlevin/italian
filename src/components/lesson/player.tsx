@@ -9,10 +9,11 @@ import type { Lesson } from "@/content/types";
 import { isExercise } from "@/content/types";
 import { useDispatch, useProgress, useProgressReady } from "@/components/progress/provider";
 import { Button } from "@/components/ui/button";
-import { IconArrowLeft, IconArrowRight } from "@/components/ui/icons";
+import { IconArrowLeft, IconArrowRight, IconList } from "@/components/ui/icons";
 import { Rich } from "@/components/ui/rich";
 import { SpeakButton } from "@/components/ui/speak-button";
 import { sfx } from "@/lib/sfx";
+import { LessonPlan, type PlanRow } from "./plan";
 import { Rail } from "./rail";
 import { Session, type SessionItem, type SessionResult } from "./session";
 import { Ticket } from "./ticket";
@@ -28,6 +29,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const [stage, setStage] = useState<Stage>("intro");
   const [startAt, setStartAt] = useState(0);
   const [result, setResult] = useState<SessionResult | null>(null);
+  const [planOpen, setPlanOpen] = useState(false);
 
   const line = lineOf(lesson.id).lessons;
   const idx = line.findIndex((l) => l.id === lesson.id);
@@ -38,10 +40,20 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const resumeAt = saved && !saved.completedAt && saved.stepIndex > 0 && saved.stepIndex < lesson.steps.length ? saved.stepIndex : 0;
 
   const begin = (at: number) => {
+    setPlanOpen(false);
     setStartAt(at);
     setStage("run");
     if (at === 0) dispatch({ t: "lesson", lessonId: lesson.id, stepIndex: 0 });
   };
+
+  const closePlan = useCallback(() => setPlanOpen(false), []);
+  const planTitle = `${lesson.city} · ${lesson.title}`;
+  const reached = stage === "done" || saved?.completedAt ? lesson.steps.length : (saved?.stepIndex ?? 0);
+  const planRows: PlanRow[] = lesson.steps.map((step, i) => ({
+    step,
+    state: i < reached ? "done" : i === resumeAt && resumeAt > 0 ? "current" : "todo",
+    action: ready ? { label: i === 0 ? "Start from the beginning" : "Start from this card", onClick: () => begin(i) } : undefined,
+  }));
 
   const onAnswer = useCallback(
     (item: SessionItem, correct: boolean) =>
@@ -70,6 +82,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           <Session
             items={items}
             startAt={startAt}
+            planTitle={planTitle}
             onAnswer={onAnswer}
             onAdvance={onAdvance}
             onFinish={onFinish}
@@ -153,6 +166,27 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
                 {saved?.completedAt ? "Ride again" : "Partenza!"} <IconArrowRight size={20} />
               </Button>
             )}
+            <Button size="md" variant="ghost" block onClick={() => setPlanOpen(true)}>
+              <IconList size={18} /> Lesson plan
+            </Button>
+            {(prev || next) && (
+              <nav aria-label="Other stops" className="flex items-center justify-between gap-3 pt-2 text-[14px] font-medium text-ink-3">
+                {prev ? (
+                  <Link href={`/lesson/${prev.id}`} className="-ml-2 inline-flex min-w-0 items-center gap-1.5 rounded-full px-2 py-2 hover:text-ink">
+                    <IconArrowLeft size={16} className="shrink-0" />
+                    <span className="truncate">{prev.city}</span>
+                  </Link>
+                ) : (
+                  <span />
+                )}
+                {next && (
+                  <Link href={`/lesson/${next.id}`} className="-mr-2 inline-flex min-w-0 items-center gap-1.5 rounded-full px-2 py-2 hover:text-ink">
+                    <span className="truncate">{next.city}</span>
+                    <IconArrowRight size={16} className="shrink-0" />
+                  </Link>
+                )}
+              </nav>
+            )}
           </motion.div>
         </motion.main>
       ) : (
@@ -199,6 +233,9 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             transition={{ delay: 1.5 }}
             className="space-y-3"
           >
+            <Button size="md" variant="secondary" block onClick={() => setPlanOpen(true)} className="mb-5">
+              <IconList size={18} /> Look back over every card
+            </Button>
             <h2 className="font-mono text-[11px] font-bold tracking-[0.18em] text-ink-3 uppercase">Words from this stop</h2>
             <ul className="divide-y divide-line/70 rounded-2xl border border-line bg-card px-4 shadow-card">
               {lesson.vocab.map((v, i) => (
@@ -244,6 +281,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           </motion.div>
         </motion.main>
       )}
+      {stage !== "run" && <LessonPlan open={planOpen} title={planTitle} rows={planRows} onClose={closePlan} />}
     </>
   );
 }

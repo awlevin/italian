@@ -134,3 +134,12 @@ export const IconDevice = (p: P) => (
     <path d="M10.5 18.5h3" />
   </Svg>
 );
+/** A short itinerary: stops down a line. */
+export const IconList = (p: P) => (
+  <Svg {...p}>
+    <path d="M10 6.5h10M10 12h10M10 17.5h10" />
+    <circle cx="5" cy="6.5" r="1.25" fill="currentColor" />
+    <circle cx="5" cy="12" r="1.25" fill="currentColor" />
+    <circle cx="5" cy="17.5" r="1.25" fill="currentColor" />
+  </Svg>
+);

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChoiceStep, ListenStep } from "@/content/types";
 import { Rich } from "@/components/ui/rich";
 import { SpeakButton } from "@/components/ui/speak-button";
@@ -25,10 +25,13 @@ export function OptionList({
   onPick: (i: number) => void;
   locked: boolean;
 }) {
+  const grid = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (locked) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+      // Not while the learner has stepped back to an earlier card.
+      if (!grid.current?.offsetParent) return;
       const n = Number(e.key);
       if (n >= 1 && n <= options.length) onPick(n - 1);
     };
@@ -37,7 +40,7 @@ export function OptionList({
   }, [locked, onPick, options.length]);
 
   return (
-    <div className="grid gap-2.5" data-reveal>
+    <div ref={grid} className="grid gap-2.5" data-reveal>
       {options.map((o, i) => {
         const isPicked = picked === i;
         const isAnswer = i === answer;
