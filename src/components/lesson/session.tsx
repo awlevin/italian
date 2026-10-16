@@ -14,6 +14,7 @@ import { Footer } from "./feedback";
 import { LessonPlan, type PlanRow } from "./plan";
 import { Rail } from "./rail";
 import { StepView } from "./step-view";
+import { useT } from "@/lib/locale";
 
 export interface SessionItem {
   /** Unique key within the session. */
@@ -173,13 +174,14 @@ export function Session({
     [pos],
   );
   const back = shown > 0 ? () => goTo(shown - 1) : undefined;
+  const t = useT();
 
   const primary = looking
     ? { label: view === pos - 1 ? "Back to the current card" : "Next card", onClick: () => goTo(view + 1) }
     : phase !== "answering"
       ? { label: "Continue", onClick: advance }
       : !exercise
-        ? { label: step?.kind === "morph" ? "Got the pattern" : "Capito!", onClick: advance }
+        ? { label: step?.kind === "morph" ? "Got the pattern" : t("Got it", "Capito!"), onClick: advance }
         : step?.kind === "type" || step?.kind === "build"
           ? { label: "Check", onClick: check, disabled: !canCheck }
           : null;

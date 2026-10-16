@@ -12,6 +12,7 @@ import { ButtonLink } from "./ui/button";
 import { IconArrowRight, IconCheck, IconRepeat, IconTrain } from "./ui/icons";
 import { Segmented } from "./ui/segmented";
 import { SplitFlap } from "./ui/split-flap";
+import { setUiLang, useT, useUiLang, type UiLang } from "@/lib/locale";
 
 const MotionLink = motion.create(Link);
 
@@ -28,6 +29,7 @@ function readLine(): LineId {
 }
 
 export function Journey() {
+  const t = useT();
   const [lineId, setLineId] = useState<LineId>(readLine);
   const choose = (id: LineId) => {
     setLineId(id);
@@ -43,7 +45,7 @@ export function Journey() {
         label="Line"
         value={lineId}
         onChange={choose}
-        options={lines.map((l) => ({ value: l.id, label: l.it }))}
+        options={lines.map((l) => ({ value: l.id, label: t(l.short, l.it) }))}
       />
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -57,6 +59,7 @@ export function Journey() {
         </motion.div>
       </AnimatePresence>
       <OfflineCard />
+      <LanguageSetting />
     </div>
   );
 }
@@ -75,14 +78,15 @@ function LineView({ lessons: course }: { lessons: Lesson[] }) {
   const days = streak(progress.days);
   const learned = learnedCount(progress);
   const due = dueItemIds(progress).filter((id) => itemById.has(id)).length;
+  const t = useT();
 
   const cta = allDone
-    ? { href: "/review", label: "Ripassa tutto" }
+    ? { href: "/review", label: t("Review everything", "Ripassa tutto") }
     : inProgress
-      ? { href: `/lesson/${current.id}`, label: `Riprendi ${current.city}` }
+      ? { href: `/lesson/${current.id}`, label: t(`Resume ${current.city}`, `Riprendi ${current.city}`) }
       : currentIdx === 0
-        ? { href: `/lesson/${current.id}`, label: "Partenza!" }
-        : { href: `/lesson/${current.id}`, label: `Parti per ${current.city}` };
+        ? { href: `/lesson/${current.id}`, label: t("Start", "Partenza!") }
+        : { href: `/lesson/${current.id}`, label: t(`Go to ${current.city}`, `Parti per ${current.city}`) };
 
   return (
     <div className="space-y-7">
@@ -113,12 +117,12 @@ function LineView({ lessons: course }: { lessons: Lesson[] }) {
 
       <section>
         <div className="mb-2 flex items-baseline justify-between gap-3">
-          <h2 className="font-mono text-[11px] font-bold tracking-[0.16em] text-ink-3 uppercase">Le fermate</h2>
+          <h2 className="font-mono text-[11px] font-bold tracking-[0.16em] text-ink-3 uppercase">{t("Stops", "Le fermate")}</h2>
           {ready && (days > 0 || learned > 0) && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 text-[13px] text-ink-3">
-              {days > 0 && <Stat value={days} label={days === 1 ? "giorno di fila" : "giorni di fila"} title="Day streak" />}
+              {days > 0 && <Stat value={days} label={days === 1 ? t("day streak", "giorno di fila") : t("day streak", "giorni di fila")} title="Day streak" />}
               {learned > 0 && (
-                <Stat value={learned} label={learned === 1 ? "parola sicura" : "parole sicure"} title="Answers right twice in a row" />
+                <Stat value={learned} label={learned === 1 ? t("solid word", "parola sicura") : t("solid words", "parole sicure")} title="Answers right twice in a row" />
               )}
             </motion.p>
           )}
@@ -197,6 +201,7 @@ function Board({
 }
 
 function ReviewNudge({ due }: { due: number }) {
+  const t = useT();
   return (
     <MotionLink
       href="/review"
@@ -208,7 +213,7 @@ function ReviewNudge({ due }: { due: number }) {
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[15px] font-semibold text-ink">
-          {due} {due === 1 ? "carta da ripassare" : "carte da ripassare"}
+          {due} {due === 1 ? t("card to review", "carta da ripassare") : t("cards to review", "carte da ripassare")}
         </span>
         <span className="block text-[13px] text-ink-3">A quick refresh before they fade</span>
       </span>
@@ -316,5 +321,27 @@ function Station({
         </span>
       </MotionLink>
     </motion.li>
+  );
+}
+
+/** The language of menus and buttons. Lessons are always Italian. */
+function LanguageSetting() {
+  const lang = useUiLang();
+  const t = useT();
+  return (
+    <section aria-label="App language" className="space-y-2">
+      <h2 className="font-mono text-[11px] font-bold tracking-[0.16em] text-ink-3 uppercase">
+        {t("Menu language", "Lingua dei menu")}
+      </h2>
+      <Segmented<UiLang>
+        label="App language"
+        value={lang}
+        onChange={setUiLang}
+        options={[
+          { value: "en", label: "English" },
+          { value: "it", label: "Italiano" },
+        ]}
+      />
+    </section>
   );
 }

@@ -23,18 +23,18 @@ test("downloads everything, then works with no network", async ({ page, context 
 
   // A cold load of the home page still opens, signed in.
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Le fermate" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { name: "Stops" })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText("Offline · saved on device")).toBeVisible();
 
   // Tabs still navigate.
-  await page.getByRole("link", { name: "Frasario" }).click();
+  await page.getByRole("link", { name: "Phrasebook" }).click();
   await expect(page).toHaveURL(/\/phrasebook$/);
-  await expect(page.getByRole("link", { name: "Lezioni" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Lessons" })).toBeVisible();
 
   // A lesson opens from a cold load, and progress made offline is kept.
   const lesson = allLessons.find((l) => l.steps[0].kind === "teach")!;
   await page.goto(`/lesson/${lesson.id}`);
-  const start = page.getByRole("button", { name: /Partenza|Ride again|Start from the beginning|Riprendi/ }).last();
+  const start = page.getByRole("button", { name: /Start|Partenza|Ride again|Riprendi/ }).last();
   await expect(start).toBeEnabled({ timeout: 15_000 });
   await start.click();
   await page.waitForTimeout(300);

@@ -46,7 +46,7 @@ for (const lesson of allLessons) {
   test(`completes ${lesson.id} with every answer right`, async ({ page }) => {
     test.skip(test.info().project.name !== "light", "content is mode-independent");
     await signIn(page, `/lesson/${lesson.id}`);
-    const start = page.getByRole("button", { name: /Partenza|Ride again|Start from the beginning/ }).last();
+    const start = page.getByRole("button", { name: /Start|Partenza|Ride again/ }).last();
     await expect(start).toBeEnabled();
     await start.click();
 
@@ -55,7 +55,7 @@ for (const lesson of allLessons) {
       await solve(page, step);
     }
 
-    await expect(page.getByRole("heading", { name: "Ben fatto!" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Well done!" })).toBeVisible();
     // Progress reached the server.
     await expect
       .poll(async () => page.evaluate(async (id) => {

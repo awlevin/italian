@@ -6,9 +6,13 @@ import type { Phase, Verdict } from "@/components/exercises/types";
 import { Button } from "@/components/ui/button";
 import { IconArrowLeft, IconCheck, IconX } from "@/components/ui/icons";
 import { Rich } from "@/components/ui/rich";
+import { useUiLang } from "@/lib/locale";
 
-const PRAISE = ["Esatto!", "Perfetto!", "Giusto!", "Bravo!", "Ottimo!", "Benissimo!", "Proprio così!"];
-const OOPS = ["Quasi!", "Non proprio…", "Peccato!", "Ci sei quasi!"];
+const PRAISE = {
+  en: ["Correct!", "Perfect!", "Right!", "Nice!", "Great!", "Excellent!", "Exactly!"],
+  it: ["Esatto!", "Perfetto!", "Giusto!", "Bravo!", "Ottimo!", "Benissimo!", "Proprio così!"],
+};
+const OOPS = { en: ["Almost!", "Not quite…", "Too bad!", "So close!"], it: ["Quasi!", "Non proprio…", "Peccato!", "Ci sei quasi!"] };
 
 /**
  * The bottom action area. Idle: a single primary action.
@@ -36,7 +40,7 @@ export function Footer({
 }) {
   const answered = phase !== "answering";
   const ok = phase === "correct";
-  const words = ok ? PRAISE : OOPS;
+  const words = (ok ? PRAISE : OOPS)[useUiLang()];
   const word = words[(seed * 7 + 3) % words.length];
   const sheet = useRef<HTMLDivElement>(null);
 

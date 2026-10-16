@@ -10,6 +10,7 @@ import { Session, type SessionItem, type SessionResult } from "./lesson/session"
 import { useDispatch, useProgress, useProgressReady } from "./progress/provider";
 import { Button, ButtonLink } from "./ui/button";
 import { IconArrowRight, IconCheck, IconRepeat, IconTrain } from "./ui/icons";
+import { useT } from "@/lib/locale";
 
 const SESSION_SIZE = 12;
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -30,6 +31,7 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
   const progress = useProgress();
   const ready = useProgressReady();
   const dispatch = useDispatch();
+  const t = useT();
   const [session, setSession] = useState<SessionItem[] | null>(null);
   const [result, setResult] = useState<SessionResult | null>(null);
   // A running session owns a history entry (?s=1): the session's Leave link
@@ -89,7 +91,7 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
   return shell(
     <div className="space-y-6 pt-2">
       <div className="space-y-1.5">
-        <h1 className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]">Ripasso</h1>
+        <h1 className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]">{t("Review", "Ripasso")}</h1>
         <p className="text-[16px] leading-relaxed text-ink-2">Missed cards come back sooner, solid ones later. A few minutes a day keeps it all fresh.</p>
       </div>
 
@@ -125,9 +127,9 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
                 <IconCheck size={28} strokeWidth={2.6} />
               </div>
               <div>
-                <p className="font-display text-[26px] leading-tight">Tutto in ordine</p>
+                <p className="font-display text-[26px] leading-tight">{t("All caught up", "Tutto in ordine")}</p>
                 <p className="text-[14px] text-ink-2">
-                  All caught up.{nextDue && <span className="text-ink-3"> Next card due {fromNow(nextDue - now)}.</span>}
+                  {t("Nothing due.", "All caught up.")}{nextDue && <span className="text-ink-3"> Next card due {fromNow(nextDue - now)}.</span>}
                 </p>
               </div>
             </div>
@@ -142,7 +144,7 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
                 <IconTrain size={26} />
               </div>
               <div>
-                <p className="font-display text-[26px] leading-tight">Niente ancora</p>
+                <p className="font-display text-[26px] leading-tight">{t("Nothing yet", "Niente ancora")}</p>
                 <p className="text-[14px] text-ink-2">Finish a stop and its cards show up here.</p>
               </div>
             </div>
@@ -188,7 +190,15 @@ function ResultCard({ result }: { result: SessionResult }) {
   const pct = result.firstTryCorrect / result.exercises;
   const r = 22;
   const c = 2 * Math.PI * r;
-  const verdict = pct === 1 ? "Perfetto!" : pct >= 0.75 ? "Bravo!" : pct >= 0.5 ? "Fatto!" : "Ci siamo quasi";
+  const t = useT();
+  const verdict =
+    pct === 1
+      ? t("Perfect!", "Perfetto!")
+      : pct >= 0.75
+        ? t("Nice work!", "Bravo!")
+        : pct >= 0.5
+          ? t("Done!", "Fatto!")
+          : t("Almost there", "Ci siamo quasi");
   const line =
     pct === 1
       ? "Every card right on the first try."

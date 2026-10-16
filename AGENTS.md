@@ -10,4 +10,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## UI copy
 
-Write menus, buttons, status and other app chrome in plain English. The learner is a beginner, so Italian belongs in lesson content, not in the controls they need to use the app.
+Menus, buttons, status and other app chrome default to plain English: the learner is a beginner. An Italian version is a setting ("Menu language" on the home screen), so write every chrome string as a pair with `useT()` from `src/lib/locale.ts`: `t("Lessons", "Lezioni")`. Lesson content stays Italian either way.

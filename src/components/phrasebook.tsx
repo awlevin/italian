@@ -9,6 +9,7 @@ import { fold } from "@/lib/text";
 import { useDispatch, useProgress } from "./progress/provider";
 import { IconChevronDown, IconRotate, IconSearch, IconStar, IconX } from "./ui/icons";
 import { SpeakButton } from "./ui/speak-button";
+import { useT } from "@/lib/locale";
 
 const byId = new Map(phrasebook.flatMap((g) => g.phrases.map((p) => [p.id, p] as const)));
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -292,6 +293,7 @@ function useScrollSpy(ids: string[], offset: () => number, enabled: boolean) {
 
 export function Phrasebook() {
   const progress = useProgress();
+  const t = useT();
   const [q, setQ] = useState("");
   const query = useDeferredValue(fold(q.trim()));
   const [showing, setShowing] = useState<Phrase | null>(null);
@@ -301,13 +303,13 @@ export function Phrasebook() {
 
   const groups = useMemo(() => {
     const saved = progress.starred.map((id) => byId.get(id)).filter((p): p is Phrase => !!p);
-    const all = [...(saved.length ? [{ id: "saved", title: "Saved", it: "Preferiti", phrases: saved }] : []), ...phrasebook];
+    const all = [...(saved.length ? [{ id: "saved", title: "Saved", it: t("Saved", "Preferiti"), phrases: saved }] : []), ...phrasebook];
     if (!query) return all;
     return all
       .filter((g) => g.id !== "saved")
       .map((g) => ({ ...g, phrases: g.phrases.filter((p) => fold(`${p.it} ${p.en}`).includes(query)) }))
       .filter((g) => g.phrases.length);
-  }, [progress.starred, query]);
+  }, [progress.starred, query, t]);
 
   const ids = useMemo(() => groups.map((g) => g.id), [groups]);
   // Where the sticky bar ends once stuck (not where it happens to be now).
@@ -331,7 +333,7 @@ export function Phrasebook() {
   return (
     <div className="pt-2">
       <div className="space-y-1.5 pb-4">
-        <h1 className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]">Frasario</h1>
+        <h1 className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]">{t("Phrasebook", "Frasario")}</h1>
         <p className="text-[16px] text-ink-2">The phrases you will actually use. Tap one for how to say it.</p>
       </div>
 
