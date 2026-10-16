@@ -16,7 +16,7 @@ test("downloads everything, then works with no network", async ({ page, context 
 
   const card = page.getByRole("region", { name: "Offline" });
   await expect(card).toHaveAttribute("data-offline", /idle|ready|downloading/, { timeout: 30_000 });
-  if ((await card.getAttribute("data-offline")) === "idle") await card.getByRole("button", { name: "Scarica" }).click();
+  if ((await card.getAttribute("data-offline")) === "idle") await card.getByRole("button", { name: "Download" }).click();
   await expect(card).toHaveAttribute("data-offline", "ready", { timeout: 120_000 });
 
   await context.setOffline(true);
