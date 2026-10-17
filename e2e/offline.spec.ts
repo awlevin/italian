@@ -26,7 +26,11 @@ test("downloads everything, then works with no network", async ({ page, context 
   });
   await page.reload({ waitUntil: "commit" });
   await expect(page.getByRole("heading", { name: "Stops" })).toBeVisible({ timeout: 4_000 });
+  // ...and moving between tabs doesn't hang on the stalled network.
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Phrasebook" }).click();
+  await expect(page.getByRole("heading", { name: "Phrasebook" })).toBeVisible({ timeout: 6_000 });
   await context.unrouteAll({ behavior: "ignoreErrors" });
+  await page.goto("/");
 
   await context.setOffline(true);
 

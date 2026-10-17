@@ -5,6 +5,8 @@
  *   come from the network, with a short timeout for flaky train Wi-Fi.
  * - Build assets and audio: cache first; their URLs never change content.
  * - Clerk's script: stale-while-revalidate, so the sign-in library loads offline too.
+ * - In-app navigation data (RSC): network with a short timeout, then a saved copy. With
+ *   neither, it fails fast, and Next.js falls back to a full load of the saved page.
  * - API calls are left alone; the progress store queues them while offline.
  *
  * Cache names are shared with src/lib/offline.ts, which fills them on "Download for offline".
@@ -14,8 +16,11 @@ const PAGES = "ciao-pages-v1";
 const STATIC = "ciao-static-v1";
 const AUDIO = "ciao-audio-v1";
 const VENDOR = "ciao-vendor-v1";
-const KEEP = [PAGES, STATIC, AUDIO, VENDOR];
+const DATA = "ciao-data-v1";
+const KEEP = [PAGES, STATIC, AUDIO, VENDOR, DATA];
 const NAV_TIMEOUT_MS = 4000;
+const DATA_TIMEOUT_MS = 2500;
+const DATA_MAX = 300;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -90,6 +95,31 @@ function offlinePage() {
   );
 }
 
+/**
+ * Data for in-app navigations. On a dead or crawling connection a hung request
+ * freezes the screen, so give up quickly: a failed request makes Next.js load
+ * the page normally, which `navigate` serves from the saved copy.
+ */
+async function routeData(event) {
+  const cache = await caches.open(DATA);
+  const network = fetch(event.request);
+  const save = network
+    .then(async (res) => {
+      if (!cacheable(res)) return;
+      await cache.put(event.request, res.clone());
+      const keys = await cache.keys();
+      await Promise.all(keys.slice(0, Math.max(0, keys.length - DATA_MAX)).map((k) => cache.delete(k)));
+    })
+    .catch(() => {});
+  event.waitUntil(save);
+  try {
+    if (!navigator.onLine) throw new Error("offline");
+    return await withTimeout(network, DATA_TIMEOUT_MS);
+  } catch {
+    return (await cache.match(event.request)) ?? Response.error();
+  }
+}
+
 async function cacheFirst(request, name) {
   const cache = await caches.open(name);
   const hit = await cache.match(request);
@@ -147,6 +177,7 @@ self.addEventListener("fetch", (event) => {
 
   if (url.origin === self.location.origin) {
     if (request.mode === "navigate") return event.respondWith(navigate(event));
+    if (request.headers.get("RSC") === "1") return event.respondWith(routeData(event));
     if (url.pathname.startsWith("/_next/static/")) return event.respondWith(cacheFirst(request, STATIC));
     if (url.pathname.startsWith("/audio/")) return event.respondWith(audio(request));
     if (/^\/(icon|apple-icon|favicon|manifest)/.test(url.pathname)) return event.respondWith(staleWhileRevalidate(event, STATIC));
