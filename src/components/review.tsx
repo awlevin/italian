@@ -11,6 +11,7 @@ import { useDispatch, useProgress, useProgressReady } from "./progress/provider"
 import { Button, ButtonLink } from "./ui/button";
 import { IconArrowRight, IconCheck, IconRepeat, IconTrain } from "./ui/icons";
 import { useT } from "@/lib/locale";
+import { useHideChrome } from "./shell";
 
 const SESSION_SIZE = 12;
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -27,7 +28,7 @@ function fromNow(ms: number) {
   return d === 1 ? "tomorrow" : `in ${d} days`;
 }
 
-export function Review({ shell }: { shell: (children: React.ReactNode) => React.ReactNode }) {
+export function Review() {
   const progress = useProgress();
   const ready = useProgressReady();
   const dispatch = useDispatch();
@@ -82,13 +83,16 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
     window.scrollTo({ top: 0 });
   }, []);
 
-  if (session && inSession) {
+  const sessionOn = !!session && inSession;
+  useHideChrome(sessionOn);
+
+  if (sessionOn) {
     return <Session items={session} exitHref="/review" onAnswer={onAnswer} onFinish={onFinish} />;
   }
 
   const batch = Math.min(due.length, SESSION_SIZE);
 
-  return shell(
+  return (
     <div className="space-y-6 pt-2">
       <div className="space-y-1.5">
         <h1 className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]">{t("Review", "Ripasso")}</h1>
@@ -182,7 +186,7 @@ export function Review({ shell }: { shell: (children: React.ReactNode) => React.
           })}
         </motion.section>
       )}
-    </div>,
+    </div>
   );
 }
 

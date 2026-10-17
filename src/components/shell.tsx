@@ -1,10 +1,10 @@
 "use client";
 
 import { UserButton, useUser } from "@clerk/nextjs";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useAnimate } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { itemById } from "@/content/course";
 import { useOnline } from "@/lib/offline";
 import { dueItemIds } from "@/lib/stats";
@@ -90,6 +90,54 @@ const TABS = [
   { href: "/phrasebook", en: "Phrasebook", it: "Frasario", Icon: IconBook },
 ] as const;
 
+const tabIndex = (path: string) => TABS.findIndex((t) => (t.href === "/" ? path === "/" : path.startsWith(t.href)));
+
+// Full-screen moments inside a tab (a review session) hide the header and tab bar.
+let chromeHidden = false;
+const chromeListeners = new Set<() => void>();
+const subscribeChrome = (fn: () => void) => {
+  chromeListeners.add(fn);
+  return () => void chromeListeners.delete(fn);
+};
+
+export function useHideChrome(hide: boolean) {
+  useLayoutEffect(() => {
+    if (!hide) return;
+    chromeHidden = true;
+    chromeListeners.forEach((l) => l());
+    return () => {
+      chromeHidden = false;
+      chromeListeners.forEach((l) => l());
+    };
+  }, [hide]);
+}
+
+/**
+ * Slides new tab content in from the side of the tab that was tapped, so
+ * switching tabs reads as moving along the bar, not loading a new page.
+ */
+function TabContent({ children }: { children: React.ReactNode }) {
+  const path = usePathname();
+  const prev = useRef(path);
+  const [scope, animate] = useAnimate<HTMLDivElement>();
+  useEffect(() => {
+    const from = tabIndex(prev.current);
+    const to = tabIndex(path);
+    prev.current = path;
+    if (from < 0 || to < 0 || from === to) return;
+    window.scrollTo({ top: 0 });
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const el = scope.current;
+    // Clear the transform afterwards: it would trap the pages' fixed overlays (show card, session sheet) in this div.
+    void animate(
+      el,
+      reduce ? { opacity: [0, 1] } : { opacity: [0, 1], x: [to > from ? 28 : -28, 0] },
+      { duration: reduce ? 0.15 : 0.32, ease: [0.22, 1, 0.36, 1] },
+    ).then(() => el.style.removeProperty("transform"));
+  }, [path, animate, scope]);
+  return <div ref={scope}>{children}</div>;
+}
+
 /** True while a text field has focus on a touch device (the keyboard is up). */
 function useTyping() {
   const [typing, setTyping] = useState(false);
@@ -170,32 +218,40 @@ function TabBar() {
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const hasPhoto = useUser().user?.hasImage ?? false;
+  const hidden = useSyncExternalStore(subscribeChrome, () => chromeHidden, () => false);
+  // The tree keeps its shape when the chrome hides, so the page underneath keeps its state.
   return (
-    <div className="relative z-10 min-h-dvh">
-      {/* Home-screen app: content scrolling under the status bar gets a paper backdrop. */}
-      <div aria-hidden className="fixed inset-x-0 top-0 z-30 h-[env(safe-area-inset-top)] bg-paper" />
-      <header className="mx-auto flex max-w-xl items-center justify-between gap-3 px-5 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
-        <Link href="/" className="-ml-1 rounded-lg px-1 font-display text-[24px] tracking-[-0.01em] text-ink italic">
-          Ciao
-        </Link>
-        <div className="flex min-w-0 items-center gap-2">
-          <SyncBadge />
-          <span className="grid size-9 shrink-0 place-items-center">
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "size-9 ring-2 ring-line bg-accent",
-                  // Clerk's stock gradient avatar fights the palette: tint it to the accent.
-                  avatarImage: hasPhoto ? "" : "mix-blend-luminosity opacity-70",
-                  userButtonTrigger: "rounded-full",
-                },
-              }}
-            />
-          </span>
-        </div>
-      </header>
-      <main className="mx-auto max-w-xl px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">{children}</main>
-      <TabBar />
+    <div className={hidden ? undefined : "relative z-10 min-h-dvh"}>
+      {!hidden && (
+        <>
+          {/* Home-screen app: content scrolling under the status bar gets a paper backdrop. */}
+          <div aria-hidden className="fixed inset-x-0 top-0 z-30 h-[env(safe-area-inset-top)] bg-paper" />
+          <header className="mx-auto flex max-w-xl items-center justify-between gap-3 px-5 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
+            <Link href="/" className="-ml-1 rounded-lg px-1 font-display text-[24px] tracking-[-0.01em] text-ink italic">
+              Ciao
+            </Link>
+            <div className="flex min-w-0 items-center gap-2">
+              <SyncBadge />
+              <span className="grid size-9 shrink-0 place-items-center">
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: "size-9 ring-2 ring-line bg-accent",
+                      // Clerk's stock gradient avatar fights the palette: tint it to the accent.
+                      avatarImage: hasPhoto ? "" : "mix-blend-luminosity opacity-70",
+                      userButtonTrigger: "rounded-full",
+                    },
+                  }}
+                />
+              </span>
+            </div>
+          </header>
+        </>
+      )}
+      <main className={hidden ? undefined : "mx-auto max-w-xl px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]"}>
+        <TabContent>{children}</TabContent>
+      </main>
+      {!hidden && <TabBar />}
     </div>
   );
 }
