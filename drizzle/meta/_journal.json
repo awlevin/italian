@@ -15,6 +15,13 @@
       "when": 1792089349107,
       "tag": "0001_hesitant_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792209385051,
+      "tag": "0002_absent_sersi",
+      "breakpoints": true
     }
   ]
 }

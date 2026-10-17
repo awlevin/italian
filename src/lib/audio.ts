@@ -4,6 +4,15 @@ import manifest from "@/content/audio-manifest.json";
 import { audioKey, plain } from "./text";
 
 const available = new Set<string>(manifest.keys);
+/** Clips for phrases added from the phrasebook, by audio key. */
+const added = new Map<string, string>();
+
+/** Lets speak() play the recorded clips of added phrases. */
+export function addClips(clips: { text: string; url: string }[]) {
+  for (const c of clips) added.set(audioKey(c.text), c.url);
+}
+
+const clipUrl = (key: string) => (available.has(key) ? `/audio/${key}.mp3` : added.get(key));
 let current: HTMLAudioElement | null = null;
 const listeners = new Set<(playing: string | null) => void>();
 let playingText: string | null = null;
@@ -59,9 +68,9 @@ export function speak(raw: string, { rate = 1 }: { rate?: number } = {}) {
   if (!text) return;
   stop();
   setPlaying(raw);
-  const key = audioKey(text);
-  if (available.has(key)) {
-    const el = new Audio(`/audio/${key}.mp3`);
+  const url = clipUrl(audioKey(text));
+  if (url) {
+    const el = new Audio(url);
     el.playbackRate = rate;
     // Keep pitch natural when slowed down.
     (el as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
@@ -79,12 +88,13 @@ const preloaded = new Set<string>();
 export function preload(texts: string[]) {
   for (const t of texts) {
     const key = audioKey(t);
-    if (available.has(key) && !preloaded.has(key)) {
+    const url = clipUrl(key);
+    if (url && !preloaded.has(key)) {
       preloaded.add(key);
       const link = document.createElement("link");
       link.rel = "prefetch";
       link.as = "audio";
-      link.href = `/audio/${key}.mp3`;
+      link.href = url;
       document.head.appendChild(link);
     }
   }

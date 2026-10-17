@@ -48,3 +48,5 @@ skills-lock.json
 /test-results/
 /playwright-report/
 /.tmp/
+
+!.env.example
