@@ -7,8 +7,8 @@ const CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZÀÈÉÌÒÙ'·-0123456789";
 const GAP = 3;
 const MAX_W = { sm: 21, lg: 36 } as const;
 
-function Cell({ target, delay }: { target: string; delay: number }) {
-  const reduced = useReducedMotion();
+function Cell({ target, delay, instant }: { target: string; delay: number; instant?: boolean }) {
+  const reduced = useReducedMotion() || instant;
   const [flipping, setCh] = useState(" ");
   const ch = reduced ? target : flipping;
 
@@ -58,7 +58,18 @@ function Cell({ target, delay }: { target: string; delay: number }) {
  * A departure-board line. Each letter clatters to its target.
  * Cells shrink to fit the available width, so a long word never wraps.
  */
-export function SplitFlap({ text, size = "sm", className = "" }: { text: string; size?: "sm" | "lg"; className?: string }) {
+export function SplitFlap({
+  text,
+  size = "sm",
+  className = "",
+  instant,
+}: {
+  text: string;
+  size?: "sm" | "lg";
+  className?: string;
+  /** Show the letters without the clatter. */
+  instant?: boolean;
+}) {
   const chars = text.toUpperCase().split("");
   const n = Math.max(chars.length, 1);
   const width = `min(${MAX_W[size]}px, calc((100cqw - ${(n - 1) * GAP}px) / ${n}))`;
@@ -66,7 +77,7 @@ export function SplitFlap({ text, size = "sm", className = "" }: { text: string;
     <span className="block w-full @container" aria-label={text} role="img">
       <span className={`flex ${className}`} style={{ gap: GAP, ["--flap-w" as string]: width }}>
         {chars.map((c, i) => (
-          <Cell key={`${i}-${text}`} target={c} delay={i * 45} />
+          <Cell key={`${i}-${text}`} target={c} delay={i * 45} instant={instant} />
         ))}
       </span>
     </span>

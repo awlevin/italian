@@ -112,12 +112,10 @@ async function navigate(event) {
     event.waitUntil(refresh);
     return res;
   } catch {
-    const home = await cache.match(new URL("/", event.request.url).href);
-    if (home) {
-      event.waitUntil(refresh);
-      return home;
-    }
-    return network.catch(() => offlinePage());
+    // Not saved and no network: a small page that links back to the saved lessons
+    // (serving another page's HTML at this URL would render the wrong screen).
+    event.waitUntil(refresh);
+    return offlinePage();
   }
 }
 
@@ -158,11 +156,11 @@ async function routeData(event) {
   }
 }
 
-async function cacheFirst(request, name) {
+async function cacheFirst(request, name, timeout) {
   const cache = await caches.open(name);
   const hit = await cache.match(request);
   if (hit) return hit;
-  const res = await fetch(request);
+  const res = await (timeout ? withTimeout(fetch(request), timeout) : fetch(request));
   if (cacheable(res)) await cache.put(request, res.clone());
   return res;
 }
@@ -172,7 +170,9 @@ async function cacheFirst(request, name) {
  * answer those by slicing the cached clip.
  */
 async function audio(request) {
-  const full = await cacheFirst(new Request(request.url), AUDIO);
+  // A clip that isn't saved gives up quickly on a stalled connection, so the
+  // app falls back to the phone's voice instead of hanging.
+  const full = await cacheFirst(new Request(request.url), AUDIO, 4000).catch(() => Response.error());
   const range = request.headers.get("range");
   const m = range && /bytes=(\d*)-(\d*)/.exec(range);
   if (!m || !full.ok) return full;

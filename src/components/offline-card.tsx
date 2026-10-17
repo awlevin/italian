@@ -20,9 +20,9 @@ export function OfflineCard() {
       : state.phase === "downloading"
         ? { title: t("Downloading…", "Scaricando…"), sub: `${Math.round(pct * 100)}% · keep the app open` }
         : !online
-          ? { title: "Offline", sub: `Lessons work. ${state.audioMissing} clips use the phone's voice until you download` }
+          ? { title: "Offline", sub: `Lessons work. ${state.missing} clips use the phone's voice until you download` }
           : state.phase === "error"
-            ? { title: "Download interrupted", sub: `${state.audioMissing} clips still to go` }
+            ? { title: "Download interrupted", sub: `${state.missing} files still to go. Retry when you have a signal` }
             : { title: "Take Ciao offline", sub: "Save all lessons and native audio for planes and trains" };
 
   return (

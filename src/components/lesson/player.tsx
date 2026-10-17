@@ -98,7 +98,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col px-5 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
         >
           <Link href="/" className="-ml-2 inline-flex w-fit items-center gap-1.5 rounded-full px-2 py-2 text-[14px] font-medium text-ink-3 hover:text-ink">
-            <IconArrowLeft size={18} /> Il viaggio
+            <IconArrowLeft size={18} /> {t("Lessons", "Il viaggio")}
           </Link>
 
           <div className="flex flex-1 flex-col justify-center gap-7 py-10">
