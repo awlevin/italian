@@ -64,8 +64,14 @@ export class ProgressStore {
   private loading = false;
   /** True once a server snapshot has been loaded this session. */
   private fresh = false;
+  /** Ops the server has confirmed, so another tab's copy of them is not re-queued. */
+  private confirmed = new Set<string>();
+  /** A sync whose response never came back: the server may have applied it anyway. */
+  private ambiguous = false;
   status: SyncStatus = "idle";
   loaded = false;
+  /** The server said 401: the sign-in session needs refreshing (e.g. after an offline start). */
+  unauthorized = false;
 
   constructor(private userId: string) {
     this.outbox = this.read<Op[]>("outbox") ?? [];
@@ -73,6 +79,13 @@ export class ProgressStore {
     this.server = cached;
     this.snapshot = this.outbox.reduce(reduce, cached ?? emptySnapshot());
     this.loaded = !!cached;
+    // A new device on a stalled connection: don't hold the app on an empty snapshot for long.
+    if (!this.loaded)
+      setTimeout(() => {
+        if (this.loaded) return;
+        this.loaded = true;
+        this.emit();
+      }, 3_000);
   }
 
   // "ponte" is the app's old name. Keep it: a new prefix would orphan unsynced outboxes.
@@ -109,10 +122,24 @@ export class ProgressStore {
     this.emit();
   }
 
+  /**
+   * Saves the outbox, first taking in ops another tab (say, the home-screen app
+   * and a browser tab) queued under the same key, so neither overwrites the other.
+   */
+  private saveOutbox() {
+    const mine = new Set(this.outbox.map((o) => o.id));
+    for (const op of this.read<Op[]>("outbox") ?? []) {
+      if (mine.has(op.id) || this.confirmed.has(op.id)) continue;
+      this.outbox.push(op);
+      this.snapshot = reduce(this.snapshot, op);
+    }
+    this.write("outbox", this.outbox);
+  }
+
   dispatch(input: OpInput) {
     const op = { ...input, id: crypto.randomUUID(), at: new Date().toISOString() } as Op;
     this.outbox.push(op);
-    this.write("outbox", this.outbox);
+    this.saveOutbox();
     this.snapshot = reduce(this.snapshot, op);
     this.emit();
     this.schedule(400);
@@ -142,12 +169,14 @@ export class ProgressStore {
         cache: "no-store",
         signal: AbortSignal.timeout(15_000),
       });
+      this.unauthorized = res.status === 401;
       if (!res.ok) throw new Error(String(res.status));
       this.server = (await res.json()) as Snapshot;
       this.write("snapshot", this.server);
       this.snapshot = this.outbox.reduce(reduce, this.server);
       this.fresh = true;
       this.loadAttempt = 0;
+      if (!this.outbox.length) this.setStatus("idle");
     } catch {
       this.setStatus(navigator.onLine ? "error" : "offline");
       const delay = RETRY_MS[Math.min(this.loadAttempt++, RETRY_MS.length - 1)];
@@ -180,10 +209,12 @@ export class ProgressStore {
         keepalive,
         signal: AbortSignal.timeout(20_000),
       });
+      this.unauthorized = res.status === 401;
       if (!res.ok) throw new Error(String(res.status));
       const sent = new Set(batch.map((o) => o.id));
+      sent.forEach((id) => this.confirmed.add(id));
       this.outbox = this.outbox.filter((o) => !sent.has(o.id));
-      this.write("outbox", this.outbox);
+      this.saveOutbox();
       // Fold confirmed ops into the cached server snapshot.
       this.server = batch.reduce(reduce, this.server ?? emptySnapshot());
       this.write("snapshot", this.server);
@@ -191,7 +222,15 @@ export class ProgressStore {
       this.inflight = false;
       this.setStatus(this.outbox.length ? "saving" : "saved");
       if (this.outbox.length) void this.flush();
-    } catch {
+      else if (this.ambiguous) {
+        // An earlier sync may have landed before its response was lost, so the
+        // local view could count it twice: take the server's word for it.
+        this.ambiguous = false;
+        void this.load();
+      }
+    } catch (e) {
+      // A timeout or dropped connection: the server may still have applied the batch.
+      if (!(e instanceof Error && /^\d{3}$/.test(e.message))) this.ambiguous = true;
       this.inflight = false;
       this.setStatus(navigator.onLine ? "error" : "offline");
       this.schedule(RETRY_MS[Math.min(this.attempt++, RETRY_MS.length - 1)]);

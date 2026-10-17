@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useState } from "react";
+import { createContext, use, useEffect, useState } from "react";
 import { itemById, lines, type LineId } from "@/content/course";
 import type { Lesson } from "@/content/types";
 import { dueItemIds, learnedCount, streak } from "@/lib/stats";
@@ -28,7 +28,18 @@ function readLine(): LineId {
   }
 }
 
+/**
+ * True on the first visit to this screen in a session. The board, stops and
+ * rail animate in once; coming back from another tab shows them settled.
+ */
+const Intro = createContext(true);
+let introShown = false;
+
 export function Journey() {
+  const [intro] = useState(() => !introShown);
+  useEffect(() => {
+    introShown = true;
+  }, []);
   const t = useT();
   const [lineId, setLineId] = useState<LineId>(readLine);
   const choose = (id: LineId) => {
@@ -47,17 +58,19 @@ export function Journey() {
         onChange={choose}
         options={lines.map((l) => ({ value: l.id, label: t(l.short, l.it) }))}
       />
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={line.id}
-          initial={{ opacity: 0, x: line.id === "viaggio" ? 24 : -24 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: line.id === "viaggio" ? -24 : 24, transition: { duration: 0.14 } }}
-          transition={{ type: "spring", stiffness: 420, damping: 36 }}
-        >
-          <LineView lessons={line.lessons} />
-        </motion.div>
-      </AnimatePresence>
+      <Intro value={intro}>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={line.id}
+            initial={{ opacity: 0, x: line.id === "viaggio" ? 24 : -24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: line.id === "viaggio" ? -24 : 24, transition: { duration: 0.14 } }}
+            transition={{ type: "spring", stiffness: 420, damping: 36 }}
+          >
+            <LineView lessons={line.lessons} />
+          </motion.div>
+        </AnimatePresence>
+      </Intro>
       <OfflineCard />
       <LanguageSetting />
     </div>
@@ -65,6 +78,7 @@ export function Journey() {
 }
 
 function LineView({ lessons: course }: { lessons: Lesson[] }) {
+  const intro = use(Intro);
   const progress = useProgress();
   const ready = useProgressReady();
   const currentIdx = Math.max(
@@ -107,7 +121,7 @@ function LineView({ lessons: course }: { lessons: Lesson[] }) {
 
       {ready && due > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 6 }}
+          initial={intro ? { opacity: 0, y: 6 } : false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
@@ -119,7 +133,7 @@ function LineView({ lessons: course }: { lessons: Lesson[] }) {
         <div className="mb-2 flex items-baseline justify-between gap-3">
           <h2 className="font-mono text-[11px] font-bold tracking-[0.16em] text-ink-3 uppercase">{t("Stops", "Le fermate")}</h2>
           {ready && (days > 0 || learned > 0) && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 text-[13px] text-ink-3">
+            <motion.p initial={intro ? { opacity: 0 } : false} animate={{ opacity: 1 }} className="flex gap-3 text-[13px] text-ink-3">
               {days > 0 && <Stat value={days} label={days === 1 ? t("day streak", "giorno di fila") : t("day streak", "giorni di fila")} title="Day streak" />}
               {learned > 0 && (
                 <Stat value={learned} label={learned === 1 ? t("solid word", "parola sicura") : t("solid words", "parole sicure")} title="Answers right twice in a row" />
@@ -161,6 +175,7 @@ function Board({
   ready: boolean;
   step: number | null;
 }) {
+  const intro = use(Intro);
   const pct = step != null ? Math.min(1, step / lesson.steps.length) : 0;
   return (
     <div
@@ -176,7 +191,7 @@ function Board({
           {String(index + 1).padStart(2, "0")}/{total}
         </span>
       </div>
-      <div className="h-[30px]">{ready && <SplitFlap key={lesson.id} text={lesson.city} />}</div>
+      <div className="h-[30px]">{ready && <SplitFlap key={lesson.id} text={lesson.city} instant={!intro} />}</div>
       <div className="mt-4 min-w-0">
         <p className="font-display text-[20px] leading-tight italic">{lesson.title}</p>
         <p className="text-[14px] opacity-65">{lesson.subtitle}</p>
@@ -186,7 +201,7 @@ function Board({
           <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/12">
             <motion.div
               className="h-full rounded-full bg-board-signal"
-              initial={{ width: 0 }}
+              initial={intro ? { width: 0 } : false}
               animate={{ width: `${pct * 100}%` }}
               transition={{ type: "spring", stiffness: 90, damping: 20, delay: 0.5 }}
             />
@@ -249,12 +264,13 @@ function Station({
   step: number;
   accuracy: number | null;
 }) {
+  const intro = use(Intro);
   const first = i === 0;
   const fill = (on: boolean, delay: number) =>
     on && (
       <motion.span
         className="absolute inset-0 origin-top bg-ok"
-        initial={{ scaleY: 0 }}
+        initial={intro ? { scaleY: 0 } : false}
         animate={{ scaleY: 1 }}
         transition={{ duration: 0.22, delay, ease: "linear" }}
       />
@@ -262,7 +278,7 @@ function Station({
 
   return (
     <motion.li
-      initial={{ opacity: 0, y: 4 }}
+      initial={intro ? { opacity: 0, y: 4 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.025 * i, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       className="relative"

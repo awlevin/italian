@@ -12,6 +12,8 @@ const AUDIO = "ciao-audio-v1";
 const SHELL_KEY = "ciao:offline-shell";
 const WANT_KEY = "ciao:offline-audio";
 const USER_KEY = "ciao:last-user";
+/** A stalled connection must never leave a download or check hanging. */
+const FETCH_TIMEOUT_MS = 15_000;
 
 export const supported = () => typeof window !== "undefined" && "serviceWorker" in navigator && "caches" in window;
 
@@ -40,11 +42,20 @@ export function useOnline(): boolean {
 // Clerk needs the network to start. Offline, the app falls back to the last
 // user who signed in on this device, whose progress is already stored locally.
 
+const userListeners = new Set<() => void>();
+
 export function rememberUser(id: string | null) {
   try {
+    if (id === localStorage.getItem(USER_KEY)) return;
     if (id) localStorage.setItem(USER_KEY, id);
     else localStorage.removeItem(USER_KEY);
   } catch {}
+  userListeners.forEach((l) => l());
+}
+
+export function subscribeUser(fn: () => void) {
+  userListeners.add(fn);
+  return () => void userListeners.delete(fn);
 }
 
 export function lastUser(): string | null {
@@ -73,7 +84,7 @@ async function pool<T>(items: T[], limit: number, fn: (item: T) => Promise<void>
 
 async function put(cache: Cache, url: string, key = url): Promise<Response | null> {
   try {
-    const res = await fetch(url, { credentials: "same-origin", cache: "no-cache" });
+    const res = await fetch(url, { credentials: "same-origin", cache: "no-cache", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     if (!res.ok || res.redirected) return null;
     await cache.put(new URL(key, location.origin).href, res.clone());
     return res;
@@ -87,37 +98,48 @@ async function put(cache: Cache, url: string, key = url): Promise<Response | nul
  * saved once all of its assets are, so an offline load can never find a page
  * whose scripts are missing.
  */
-async function savePages(onStep?: () => void) {
+async function savePages(onStep?: () => void): Promise<boolean> {
   const [pages, stat] = await Promise.all([caches.open(PAGES), caches.open(STATIC)]);
   const fonts = new Set<string>();
+  let all = true;
   await pool(pagePaths(), 4, async (path) => {
     try {
-      const res = await fetch(path, { credentials: "same-origin", cache: "no-cache" });
+      const res = await fetch(path, { credentials: "same-origin", cache: "no-cache", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       if (!res.ok || res.redirected) return;
       const html = await res.clone().text();
       const assets = [...new Set(html.match(ASSET_RE) ?? [])];
       const saved = await Promise.all(
         assets.map(async (url) => {
-          if (await stat.match(url)) return true;
-          const asset = await put(stat, url);
-          if (asset && url.endsWith(".css")) for (const m of (await asset.text()).matchAll(CSS_URL_RE)) fonts.add(m[1]);
+          const asset = (await stat.match(url)) ?? (await put(stat, url));
+          // Fonts live in the CSS, not the page: read it even when it was saved earlier.
+          if (asset && url.endsWith(".css")) for (const m of (await asset.clone().text()).matchAll(CSS_URL_RE)) fonts.add(m[1]);
           return !!asset;
         }),
       );
       if (saved.every(Boolean)) await pages.put(new URL(path, location.origin).href, res);
+      else all = false;
     } catch {
       // Keep whatever copy of this page was saved before.
+      all = false;
     } finally {
       onStep?.();
     }
   });
   await pool([...fonts], 6, async (url) => void ((await stat.match(url)) || (await put(stat, url))));
+  return all;
+}
+
+async function missingPages(): Promise<number> {
+  const cache = await caches.open(PAGES);
+  let n = 0;
+  for (const path of pagePaths()) if (!(await cache.match(new URL(path, location.origin).href))) n++;
+  return n;
 }
 
 /** The home page's script list: it changes with every deploy. */
 async function buildSignature(): Promise<string | null> {
   try {
-    const res = await fetch("/", { credentials: "same-origin", cache: "no-cache" });
+    const res = await fetch("/", { credentials: "same-origin", cache: "no-cache", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     return res.ok ? [...new Set((await res.text()).match(ASSET_RE) ?? [])].sort().join("|") : null;
   } catch {
     return null;
@@ -135,10 +157,10 @@ async function missingAudio(): Promise<string[]> {
 export type OfflineState =
   | { phase: "unsupported" }
   | { phase: "checking" }
-  | { phase: "idle"; audioMissing: number }
+  | { phase: "idle"; missing: number }
   | { phase: "downloading"; done: number; total: number }
   | { phase: "ready" }
-  | { phase: "error"; audioMissing: number };
+  | { phase: "error"; missing: number };
 
 let state: OfflineState = { phase: "checking" };
 const listeners = new Set<() => void>();
@@ -173,15 +195,15 @@ export async function initOffline() {
   void navigator.storage?.persist?.().catch(() => {});
 
   // Re-save the pages after each deploy, so offline loads match the cached scripts.
+  // Also retry when an earlier save was cut short by a bad connection.
   const sig = navigator.onLine ? await buildSignature() : null;
-  if (sig && sig !== readKey(SHELL_KEY)) {
-    await savePages().catch(() => {});
-    writeKey(SHELL_KEY, sig);
+  if (sig && (sig !== readKey(SHELL_KEY) || (await missingPages()) > 0)) {
+    if (await savePages().catch(() => false)) writeKey(SHELL_KEY, sig);
   }
   const missing = await missingAudio().catch(() => audioUrls());
-  if (!missing.length) return set({ phase: "ready" });
+  if (!missing.length && !(await missingPages())) return set({ phase: "ready" });
   if (readKey(WANT_KEY) && navigator.onLine) return download();
-  set({ phase: "idle", audioMissing: missing.length });
+  set({ phase: "idle", missing: missing.length });
 }
 
 /** Saves everything needed to use the app offline. */
@@ -203,8 +225,8 @@ export async function download() {
     tick();
   });
 
-  const left = await missingAudio().catch(() => missing);
-  set(left.length ? { phase: "error", audioMissing: left.length } : { phase: "ready" });
+  const left = (await missingAudio().catch(() => missing)).length + (await missingPages());
+  set(left ? { phase: "error", missing: left } : { phase: "ready" });
 }
 
 const subscribe = (fn: () => void) => {

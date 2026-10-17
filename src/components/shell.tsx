@@ -1,7 +1,7 @@
 "use client";
 
 import { UserButton, useUser } from "@clerk/nextjs";
-import { AnimatePresence, motion, useAnimate } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -90,7 +90,6 @@ const TABS = [
   { href: "/phrasebook", en: "Phrasebook", it: "Frasario", Icon: IconBook },
 ] as const;
 
-const tabIndex = (path: string) => TABS.findIndex((t) => (t.href === "/" ? path === "/" : path.startsWith(t.href)));
 
 // Full-screen moments inside a tab (a review session) hide the header and tab bar.
 let chromeHidden = false;
@@ -110,32 +109,6 @@ export function useHideChrome(hide: boolean) {
       chromeListeners.forEach((l) => l());
     };
   }, [hide]);
-}
-
-/**
- * Slides new tab content in from the side of the tab that was tapped, so
- * switching tabs reads as moving along the bar, not loading a new page.
- */
-function TabContent({ children }: { children: React.ReactNode }) {
-  const path = usePathname();
-  const prev = useRef(path);
-  const [scope, animate] = useAnimate<HTMLDivElement>();
-  useEffect(() => {
-    const from = tabIndex(prev.current);
-    const to = tabIndex(path);
-    prev.current = path;
-    if (from < 0 || to < 0 || from === to) return;
-    window.scrollTo({ top: 0 });
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const el = scope.current;
-    // Clear the transform afterwards: it would trap the pages' fixed overlays (show card, session sheet) in this div.
-    void animate(
-      el,
-      reduce ? { opacity: [0, 1] } : { opacity: [0, 1], x: [to > from ? 28 : -28, 0] },
-      { duration: reduce ? 0.15 : 0.32, ease: [0.22, 1, 0.36, 1] },
-    ).then(() => el.style.removeProperty("transform"));
-  }, [path, animate, scope]);
-  return <div ref={scope}>{children}</div>;
 }
 
 /** True while a text field has focus on a touch device (the keyboard is up). */
@@ -249,7 +222,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </>
       )}
       <main className={hidden ? undefined : "mx-auto max-w-xl px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]"}>
-        <TabContent>{children}</TabContent>
+        {children}
       </main>
       {!hidden && <TabBar />}
     </div>
