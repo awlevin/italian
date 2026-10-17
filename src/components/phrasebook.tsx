@@ -69,7 +69,7 @@ function Row({
                 {p.say}
               </p>
               {p.note && <p className="text-[14px] leading-snug text-ink-2">{p.note}</p>}
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <motion.button
                   type="button"
                   whileTap={{ scale: 0.95 }}
@@ -125,7 +125,7 @@ function RemoveButton({ onRemove }: { onRemove: () => void }) {
         sure ? "bg-wrong-soft text-wrong" : "text-ink-3 hover:text-ink"
       }`}
     >
-      {sure ? t("Tap to remove", "Tocca per rimuovere") : t("Remove", "Rimuovi")}
+      {sure ? t("Remove?", "Rimuovere?") : t("Remove", "Rimuovi")}
     </motion.button>
   );
 }
