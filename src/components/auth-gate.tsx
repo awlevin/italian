@@ -1,12 +1,10 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { lastUser, rememberUser, useOnline } from "@/lib/offline";
 import { Welcome } from "./welcome";
 
-/** How long to wait for Clerk before trusting the last user on this device. */
-const CLERK_GRACE_MS = 4000;
 const noSubscribe = () => () => {};
 
 /**
@@ -18,12 +16,6 @@ export function useUserId(): { ready: boolean; userId: string | null; offline: b
   const { isLoaded, isSignedIn, userId } = useAuth();
   const online = useOnline();
   const cached = useSyncExternalStore(noSubscribe, lastUser, () => null);
-  const [waited, setWaited] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setWaited(true), CLERK_GRACE_MS);
-    return () => clearTimeout(t);
-  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -33,7 +25,8 @@ export function useUserId(): { ready: boolean; userId: string | null; offline: b
   }, [isLoaded, isSignedIn, userId, online]);
 
   if (isLoaded && isSignedIn) return { ready: true, userId, offline: false };
-  if (cached && (!online || (!isLoaded && waited))) return { ready: true, userId: cached, offline: true };
+  // Don't wait on Clerk: it can take seconds on a train, and confirms (or signs out) once it loads.
+  if (cached && (!online || !isLoaded)) return { ready: true, userId: cached, offline: true };
   if (!isLoaded) return { ready: false, userId: null, offline: false };
   return { ready: true, userId: null, offline: false };
 }
