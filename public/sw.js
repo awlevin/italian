@@ -37,9 +37,47 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((names) => Promise.all(names.filter((n) => n.startsWith("ciao-") && !KEEP.includes(n)).map((n) => caches.delete(n))))
+      .then(dropBrokenPages)
       .then(() => self.clients.claim()),
   );
 });
+
+const ASSET_RE = /\/_next\/static\/[^"'\s()\\<>]+/g;
+const assetsOf = (html) => [...new Set(html.match(ASSET_RE) ?? [])];
+
+/** True once every script and style the page needs is saved. */
+async function complete(html) {
+  const stat = await caches.open(STATIC);
+  for (const url of assetsOf(html)) if (!(await stat.match(url))) return false;
+  return true;
+}
+
+/**
+ * Saves a page only once its scripts and styles are saved too. A page saved
+ * without them (a new deploy fetched over slow Wi-Fi) would sit on the loading
+ * screen forever with no network.
+ */
+async function savePage(key, res) {
+  if (!cacheable(res)) return;
+  const html = await res.clone().text();
+  const stat = await caches.open(STATIC);
+  for (const url of assetsOf(html)) {
+    if (await stat.match(url)) continue;
+    const asset = await fetch(url);
+    if (!cacheable(asset)) return;
+    await stat.put(url, asset);
+  }
+  await (await caches.open(PAGES)).put(key, res);
+}
+
+/** Removes saved pages left behind by older workers without their scripts. */
+async function dropBrokenPages() {
+  const cache = await caches.open(PAGES);
+  for (const req of await cache.keys()) {
+    const res = await cache.match(req);
+    if (!res || !(await complete(await res.text()))) await cache.delete(req);
+  }
+}
 
 /** Only plain successful responses are worth keeping (no redirects, e.g. Clerk's handshake). */
 const cacheable = (res) => res && res.ok && !res.redirected && (res.type === "basic" || res.type === "cors");
@@ -61,7 +99,7 @@ async function navigate(event) {
   const cache = await caches.open(PAGES);
   const key = pageKey(event.request.url);
   const network = fetch(event.request);
-  const refresh = network.then((res) => (cacheable(res) ? cache.put(key, res.clone()) : undefined)).catch(() => {});
+  const refresh = network.then((res) => savePage(key, res.clone())).catch(() => {});
 
   // Saved pages open instantly, whatever the signal; the network refreshes them for next time.
   const saved = await cache.match(key);

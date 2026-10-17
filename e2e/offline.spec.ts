@@ -75,4 +75,19 @@ test("downloads everything, then works with no network", async ({ page, context 
   // Back online, the queued progress reaches the server.
   await context.setOffline(false);
   await expect.poll(queued, { timeout: 30_000 }).toBe(0);
+
+  // A page is only saved once its scripts are: otherwise it would hang on the loading screen offline.
+  const savedHome = () => page.evaluate(async () => !!(await (await caches.open("ciao-pages-v1")).match("/")));
+  await page.evaluate(async () => {
+    await caches.delete("ciao-pages-v1");
+    await caches.delete("ciao-static-v1");
+  });
+  await context.route("**/_next/static/**", (route) => route.abort());
+  await page.goto("/", { waitUntil: "commit" });
+  await page.waitForTimeout(2_000);
+  expect(await savedHome()).toBe(false);
+  await context.unrouteAll({ behavior: "ignoreErrors" });
+  await page.reload();
+  await expect.poll(savedHome, { timeout: 15_000 }).toBe(true);
+  await expect(page.getByRole("heading", { name: "Stops" })).toBeVisible();
 });

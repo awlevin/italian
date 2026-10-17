@@ -82,22 +82,35 @@ async function put(cache: Cache, url: string, key = url): Promise<Response | nul
   }
 }
 
-/** Saves every page and the scripts, styles and fonts they use. */
+/**
+ * Saves every page and the scripts, styles and fonts they use. A page is only
+ * saved once all of its assets are, so an offline load can never find a page
+ * whose scripts are missing.
+ */
 async function savePages(onStep?: () => void) {
   const [pages, stat] = await Promise.all([caches.open(PAGES), caches.open(STATIC)]);
-  const assets = new Set<string>();
+  const fonts = new Set<string>();
   await pool(pagePaths(), 4, async (path) => {
-    const res = await put(pages, path);
-    if (res) for (const m of (await res.text()).match(ASSET_RE) ?? []) assets.add(m);
-    onStep?.();
+    try {
+      const res = await fetch(path, { credentials: "same-origin", cache: "no-cache" });
+      if (!res.ok || res.redirected) return;
+      const html = await res.clone().text();
+      const assets = [...new Set(html.match(ASSET_RE) ?? [])];
+      const saved = await Promise.all(
+        assets.map(async (url) => {
+          if (await stat.match(url)) return true;
+          const asset = await put(stat, url);
+          if (asset && url.endsWith(".css")) for (const m of (await asset.text()).matchAll(CSS_URL_RE)) fonts.add(m[1]);
+          return !!asset;
+        }),
+      );
+      if (saved.every(Boolean)) await pages.put(new URL(path, location.origin).href, res);
+    } catch {
+      // Keep whatever copy of this page was saved before.
+    } finally {
+      onStep?.();
+    }
   });
-  const css: string[] = [];
-  await pool([...assets], 6, async (url) => {
-    if (await stat.match(url)) return;
-    const res = await put(stat, url);
-    if (res && url.endsWith(".css")) css.push(await res.text());
-  });
-  const fonts = new Set(css.flatMap((t) => [...t.matchAll(CSS_URL_RE)].map((m) => m[1])));
   await pool([...fonts], 6, async (url) => void ((await stat.match(url)) || (await put(stat, url))));
 }
 
