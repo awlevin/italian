@@ -12,6 +12,8 @@ import { addClips } from "@/lib/audio";
 
 const CACHE_KEY = "ciao:added-phrases";
 const POLL_MS = 1500;
+/** A stalled connection (train or plane Wi-Fi) must never stop the polling. */
+const FETCH_TIMEOUT_MS = 8000;
 const EMPTY: AddedPhrase[] = [];
 
 let list: AddedPhrase[] | null = null;
@@ -44,9 +46,9 @@ let poll: ReturnType<typeof setTimeout> | undefined;
 async function load() {
   clearTimeout(poll);
   try {
-    const res = await fetch("/api/phrases", { cache: "no-store" });
+    const res = await fetch("/api/phrases", { cache: "no-store", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     if (res.ok) set(((await res.json()) as { phrases: AddedPhrase[] }).phrases);
-  } catch {} // Offline: keep what is saved.
+  } catch {} // Offline or timed out: keep what is saved, and try again below.
   if (listeners.size && list?.some(isPending)) poll = setTimeout(() => void load(), POLL_MS);
 }
 
@@ -60,6 +62,7 @@ async function add(query: string) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS * 2),
     });
   } catch {
     throw new AddError("offline");

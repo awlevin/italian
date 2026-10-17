@@ -130,7 +130,7 @@ function RemoveButton({ onRemove }: { onRemove: () => void }) {
   );
 }
 
-const STAGES = { translating: 0.45, recording: 0.9, ready: 1, failed: 1 } as const;
+const STAGES = { translating: 0.5, recording: 0.92, ready: 1, failed: 1 } as const;
 
 /** A phrase on its way: a bar that creeps through translating, then recording. Or why it failed. */
 function PendingRow({ p, onRetry, onDismiss }: { p: AddedPhrase; onRetry: () => void; onDismiss: () => void }) {
@@ -191,12 +191,19 @@ function PendingRow({ p, onRetry, onDismiss }: { p: AddedPhrase; onRetry: () => 
       ) : (
         <div className="mt-2.5 ml-11 h-1 overflow-hidden rounded-full bg-paper-2">
           <motion.div
-            className="h-full rounded-full bg-mark"
+            className="relative h-full overflow-hidden rounded-full bg-mark"
             initial={{ width: "4%" }}
             animate={{ width: `${STAGES[p.status] * 100}%` }}
-            // Slow on purpose: it creeps toward the end of the stage while the server works.
-            transition={{ duration: p.status === "translating" ? 12 : 8, ease: [0.1, 0.6, 0.3, 1] }}
-          />
+            // Eases toward the end of the stage; the shine keeps it visibly working if the server is slow.
+            transition={{ duration: p.status === "translating" ? 3 : 4, ease: [0.1, 0.6, 0.3, 1] }}
+          >
+            <motion.span
+              className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+              initial={{ left: "-50%" }}
+              animate={{ left: "100%" }}
+              transition={{ duration: 1.1, ease: "easeInOut", repeat: Infinity, repeatDelay: 0.2 }}
+            />
+          </motion.div>
         </div>
       )}
     </motion.li>

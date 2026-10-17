@@ -55,7 +55,11 @@ async function draft(query: string) {
     system: SYSTEM,
     prompt: `Request: ${query}`,
     output: Output.object({ schema: draftSchema }),
-    providerOptions: { gateway: { models: FALLBACK_MODELS } },
+    providerOptions: {
+      gateway: { models: FALLBACK_MODELS },
+      // A short phrase needs no long think: this keeps the fallback to a couple of seconds.
+      openai: { reasoningEffort: "minimal" },
+    },
     maxRetries: 2,
   });
   if (!output.ok || !plain(output.it)) throw new UserFacingError("That doesn't look like something to say. Try other words.");
