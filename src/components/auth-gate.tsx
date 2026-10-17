@@ -56,6 +56,14 @@ export function Splash() {
         <div className="relative h-[3px] w-16 overflow-hidden rounded-full bg-line">
           <span className="absolute inset-y-0 left-0 w-5 rounded-full bg-accent [animation:splash-train_1.1s_ease-in-out_infinite_alternate]" />
         </div>
+        {/* A full reload, not a client navigation: it has to work even when the app's scripts never load. */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a
+          href="/"
+          className="mt-6 text-[14px] font-semibold text-ink-3 underline underline-offset-4 opacity-0 [animation:splash-in_300ms_ease-out_8s_forwards]"
+        >
+          Taking a while? Reload
+        </a>
       </div>
       <style>{`
         @keyframes splash-in { to { opacity: 1; } }
