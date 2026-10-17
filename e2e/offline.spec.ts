@@ -19,6 +19,15 @@ test("downloads everything, then works with no network", async ({ page, context 
   if ((await card.getAttribute("data-offline")) === "idle") await card.getByRole("button", { name: "Download" }).click();
   await expect(card).toHaveAttribute("data-offline", "ready", { timeout: 120_000 });
 
+  // On a crawling connection, the saved page still opens straight away.
+  await context.route("**/*", async (route) => {
+    await new Promise((r) => setTimeout(r, 8_000));
+    await route.continue().catch(() => {});
+  });
+  await page.reload({ waitUntil: "commit" });
+  await expect(page.getByRole("heading", { name: "Stops" })).toBeVisible({ timeout: 4_000 });
+  await context.unrouteAll({ behavior: "ignoreErrors" });
+
   await context.setOffline(true);
 
   // A cold load of the home page still opens, signed in.

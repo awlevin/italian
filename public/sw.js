@@ -1,7 +1,8 @@
 /*
  * Ciao service worker: makes the app open and run with no network.
  *
- * - Pages: network first (with a short timeout for flaky train Wi-Fi), cached copy otherwise.
+ * - Pages: the saved copy opens instantly and is refreshed in the background; unsaved pages
+ *   come from the network, with a short timeout for flaky train Wi-Fi.
  * - Build assets and audio: cache first; their URLs never change content.
  * - Clerk's script: stale-while-revalidate, so the sign-in library loads offline too.
  * - API calls are left alone; the progress store queues them while offline.
@@ -55,16 +56,23 @@ async function navigate(event) {
   const cache = await caches.open(PAGES);
   const key = pageKey(event.request.url);
   const network = fetch(event.request);
+  const refresh = network.then((res) => (cacheable(res) ? cache.put(key, res.clone()) : undefined)).catch(() => {});
+
+  // Saved pages open instantly, whatever the signal; the network refreshes them for next time.
+  const saved = await cache.match(key);
+  if (saved) {
+    event.waitUntil(refresh);
+    return saved;
+  }
   try {
     const res = await withTimeout(network, NAV_TIMEOUT_MS);
-    if (cacheable(res)) event.waitUntil(cache.put(key, res.clone()));
+    event.waitUntil(refresh);
     return res;
   } catch {
-    const hit = (await cache.match(key)) ?? (await cache.match(new URL("/", event.request.url).href));
-    if (hit) {
-      // A slow network may still answer: refresh the copy for next time.
-      event.waitUntil(network.then((res) => cacheable(res) && cache.put(key, res.clone())).catch(() => {}));
-      return hit;
+    const home = await cache.match(new URL("/", event.request.url).href);
+    if (home) {
+      event.waitUntil(refresh);
+      return home;
     }
     return network.catch(() => offlinePage());
   }
