@@ -2,7 +2,7 @@
 
 import { motion, type HTMLMotionProps } from "motion/react";
 import Link from "next/link";
-import { forwardRef, type ComponentProps } from "react";
+import { forwardRef, type ComponentProps, type ReactNode } from "react";
 
 type Variant = "primary" | "secondary" | "ghost" | "ok" | "wrong";
 type Size = "md" | "lg";
@@ -29,14 +29,17 @@ export function buttonClass({ variant = "primary", size = "md", block }: { varia
   return `relative inline-flex select-none items-center justify-center gap-2 font-semibold tracking-[-0.01em] transition-[transform,translate,box-shadow,background-color,color,opacity] duration-100 disabled:pointer-events-none disabled:opacity-40 ${variants[variant]} ${sizes[size]} ${block ? "w-full" : ""}`;
 }
 
-export interface ButtonProps extends HTMLMotionProps<"button"> {
+export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
+  children?: ReactNode;
   variant?: Variant;
   size?: Size;
   block?: boolean;
+  /** Tapped and working (e.g. navigating): keeps the label, adds a spinner, ignores further taps. */
+  pending?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "primary", size = "md", block, className = "", type = "button", ...rest },
+  { variant = "primary", size = "md", block, pending, className = "", type = "button", children, onClick, ...rest },
   ref,
 ) {
   return (
@@ -45,11 +48,27 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       whileHover={{ y: variant === "ghost" ? 0 : -1 }}
       transition={{ type: "spring", stiffness: 500, damping: 30 }}
-      className={`${buttonClass({ variant, size, block })} ${className}`}
+      className={`${buttonClass({ variant, size, block })} ${pending ? "cursor-progress" : ""} ${className}`}
+      aria-busy={pending || undefined}
+      onClick={pending ? undefined : onClick}
       {...rest}
-    />
+    >
+      {children}
+      {pending && <Spinner />}
+    </motion.button>
   );
 });
+
+/** A small ring that spins in the text colour, so it reads on every variant. */
+export function Spinner({ size = 16 }: { size?: number }) {
+  return (
+    <span
+      aria-hidden
+      className="inline-block shrink-0 animate-spin rounded-full border-2 border-current border-r-transparent opacity-80"
+      style={{ width: size, height: size }}
+    />
+  );
+}
 
 /** A navigation link that looks and presses like a Button. */
 export function ButtonLink({

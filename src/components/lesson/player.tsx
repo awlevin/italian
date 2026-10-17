@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { itemId, lineOf } from "@/content/course";
 import type { Lesson } from "@/content/types";
 import { isExercise } from "@/content/types";
@@ -38,6 +38,19 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const prev = line[idx - 1];
   const next = line[idx + 1];
   const items = useMemo<SessionItem[]>(() => lesson.steps.map((step) => ({ key: step.id, step })), [lesson]);
+  // Warm both ways off the finish screen while the learner reads it, and show a
+  // spinner on whichever one they tap until the next page is in.
+  useEffect(() => {
+    if (stage !== "done") return;
+    router.prefetch("/");
+    if (next) router.prefetch(`/lesson/${next.id}`);
+  }, [stage, next, router]);
+  const [going, startGoing] = useTransition();
+  const [goingTo, setGoingTo] = useState<string | null>(null);
+  const go = (href: string) => {
+    setGoingTo(href);
+    startGoing(() => router.push(href));
+  };
   const exerciseCount = lesson.steps.filter(isExercise).length;
   const resumeAt = saved && !saved.completedAt && saved.stepIndex > 0 && saved.stepIndex < lesson.steps.length ? saved.stepIndex : 0;
 
@@ -273,11 +286,24 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             style={{ background: "linear-gradient(to top, var(--paper) 75%, transparent)" }}
           >
             {next ? (
-              <Button size="lg" block onClick={() => router.push(`/lesson/${next.id}`)}>
+              <Button
+                size="lg"
+                block
+                onClick={() => go(`/lesson/${next.id}`)}
+                pending={going && goingTo !== "/"}
+                disabled={going && goingTo === "/"}
+              >
                 Prossima fermata: {next.city} <IconArrowRight size={20} />
               </Button>
             ) : null}
-            <Button size="md" variant={next ? "ghost" : "primary"} block onClick={() => router.push("/")}>
+            <Button
+              size="md"
+              variant={next ? "ghost" : "primary"}
+              block
+              onClick={() => go("/")}
+              pending={going && goingTo === "/"}
+              disabled={going && goingTo !== "/"}
+            >
               Back to the journey
             </Button>
           </motion.div>

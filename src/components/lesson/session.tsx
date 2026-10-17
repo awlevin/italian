@@ -2,11 +2,11 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState, useTransition } from "react";
 import type { Step } from "@/content/types";
 import { isExercise } from "@/content/types";
 import type { Phase, Verdict } from "@/components/exercises/types";
-import { Button } from "@/components/ui/button";
+import { Button, Spinner } from "@/components/ui/button";
 import { IconList, IconRepeat, IconX } from "@/components/ui/icons";
 import { preload, stop } from "@/lib/audio";
 import { sfx } from "@/lib/sfx";
@@ -233,9 +233,14 @@ export function Session({
 
   const closePlan = useCallback(() => setPlanOpen(false), []);
 
+  // Warm the way out, so Leave doesn't wait on the network after the tap.
+  useEffect(() => {
+    router.prefetch(exitHref);
+  }, [router, exitHref]);
+  const [exiting, startExit] = useTransition();
   const leave = () => {
     stop();
-    router.push(exitHref);
+    startExit(() => router.push(exitHref));
   };
 
   if (!step || !shownStep) return null;
@@ -277,12 +282,13 @@ export function Session({
         <div className="relative mx-auto flex max-w-xl items-center gap-4 px-5 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3">
           <button
             type="button"
-            onClick={() => (hasProgress ? setLeaving((l) => !l) : leave())}
+            onClick={() => (exiting ? undefined : hasProgress ? setLeaving((l) => !l) : leave())}
             aria-label="Leave"
+            aria-busy={exiting || undefined}
             aria-expanded={hasProgress ? leaving : undefined}
             className="-ml-2 grid size-10 place-items-center rounded-full text-ink-3 transition-colors hover:bg-paper-2 hover:text-ink"
           >
-            <IconX size={22} />
+            {exiting && !leaving ? <Spinner size={18} /> : <IconX size={22} />}
           </button>
           <Rail value={progress} jolt={misses} />
           {planTitle && (
@@ -314,10 +320,10 @@ export function Session({
                     : "Every answer so far is saved."}
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <Button variant="secondary" onClick={leave}>
+                  <Button variant="secondary" onClick={leave} pending={exiting}>
                     Leave
                   </Button>
-                  <Button autoFocus onClick={() => setLeaving(false)}>
+                  <Button autoFocus onClick={() => setLeaving(false)} disabled={exiting}>
                     Keep going
                   </Button>
                 </div>
