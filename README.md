@@ -112,6 +112,13 @@ pronunciation (`eel KOHN-toh, pehr fah-VOH-reh`). Star the ones you will need.
 and *Turn to them* rotates it 180° so the person across the counter can read
 it. Tap any speaker button twice and the second play is at 70% speed.
 
+Search for something the phrasebook doesn't have and it offers to add it. A
+model writes the Italian, the meaning, the pronunciation and a tip (through
+Vercel AI Gateway), ElevenLabs records it in the same voice as the rest, and
+it lands under *Aggiunte* for everyone who uses the app, a few seconds later.
+The row shows its progress while it works. Added phrases live in Postgres and
+their clips in Vercel Blob, so no deploy is needed.
+
 <p align="center">
   <img src="assets/screenshots/phones-dark.png" alt="The same app at night, on a dark lapis background with gold buttons: the lesson list, a finished Build card that says Bravo!, and the full-screen phrase" width="900">
 </p>
@@ -187,7 +194,7 @@ a broken exercise or a broken sync fails the run.
 
 ```bash
 pnpm install
-pnpm db:migrate     # creates the four tables
+pnpm db:migrate     # creates the five tables
 pnpm dev
 ```
 
@@ -200,7 +207,10 @@ Then open http://localhost:3000 and sign in.
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `.env.local` | Clerk dashboard → API keys |
 | `CLERK_SECRET_KEY` | `.env.local` | Same place. The E2E test also uses it to make its test user |
 | `APP_URL` | env | Optional. Base URL for Open Graph links; defaults to the live site |
-| `ELEVENLABS_API_KEY` | `.env` | Only for `pnpm audio:gen`. The app never calls ElevenLabs |
+| `ELEVENLABS_API_KEY` | `.env`, Vercel | `pnpm audio:gen`, and on the server to record added phrases. Without it, added phrases use the device voice |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob integration | Stores the clips of added phrases |
+| `VERCEL_OIDC_TOKEN` | automatic on Vercel; `vercel env pull` locally | Pays for AI Gateway, which writes added phrases. Claude models need paid gateway credits; until then it falls back to a free model |
+| `PHRASE_MODEL` | env | Optional. Gateway model for added phrases; defaults to `anthropic/claude-sonnet-5.5` |
 
 The audio is committed in `public/audio/`, so you do not need an ElevenLabs
 key to run the app.

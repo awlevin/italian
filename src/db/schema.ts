@@ -69,3 +69,30 @@ export const starredPhrase = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.phraseId] })],
 );
+
+/**
+ * Phrases added from the phrasebook's search. Shared: every user sees every
+ * ready phrase. `status` moves translating → recording → ready, or to failed.
+ */
+export const addedPhrase = pgTable(
+  "added_phrase",
+  {
+    id: text("id").primaryKey(),
+    /** What was typed into the search, as typed. */
+    query: text("query").notNull(),
+    /** fold(query): one row per request, so asking twice finds the first. */
+    queryKey: text("query_key").notNull().unique(),
+    status: text("status").$type<"translating" | "recording" | "ready" | "failed">().notNull(),
+    it: text("it"),
+    en: text("en"),
+    say: text("say"),
+    note: text("note"),
+    /** Same-origin path of the clip, or null to use the device voice. */
+    audioUrl: text("audio_url"),
+    error: text("error"),
+    createdBy: text("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("added_phrase_created_by_idx").on(t.createdBy, t.createdAt)],
+);

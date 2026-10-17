@@ -16,29 +16,22 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { config } from "dotenv";
 import { audioKey, plain } from "../src/lib/text";
+import {
+  FALLBACK_MODEL_ID,
+  forSpeech,
+  LANGUAGE_CODE,
+  MODEL_ID,
+  OUTPUT_FORMAT,
+  SEED,
+  VOICE_ID,
+  VOICE_NAME,
+  VOICE_OWNER_ID,
+  VOICE_SETTINGS,
+} from "../src/lib/voice";
 import { collectAudioStrings } from "./audio-strings";
 
 // ── Voice and model ──────────────────────────────────────────────────────────
-/**
- * "Violetta - Ringing, Bright and Joyful" from the ElevenLabs voice library.
- * Native Italian, standard accent, clear and warm narration (not dramatic, ASMR
- * or newsreader). Verified for Italian on eleven_v4. It is the most used
- * Italian female voice in the library, so it is well tested.
- */
-const VOICE_ID = "gfKKsLN1k0oYYN9n2dXX";
-const VOICE_OWNER_ID = "136391b37c76c590e5a8337fee0ade3148d010535925031b132ae20221553dc6";
-const VOICE_NAME = "Violetta (Ponte)";
-
-const MODEL_ID = "eleven_v4";
-const FALLBACK_MODEL_ID = "eleven_multilingual_v2";
-const LANGUAGE_CODE = "it";
-
-/** Steady, plain delivery: a patient teacher, not a performance. */
-const VOICE_SETTINGS = { stability: 0.6, similarity_boost: 0.75, style: 0, use_speaker_boost: true };
-/** Fixed seed so a re-run of the same text sounds the same. */
-const SEED = 20251015;
-/** 64 kbps mono: clear speech, about 8 KB per second. Small for roaming data. */
-const OUTPUT_FORMAT = "mp3_44100_64";
+// The voice, model and settings live in src/lib/voice.ts, shared with the server.
 /** The account allows 3 concurrent requests; 429s are retried with backoff. */
 const CONCURRENCY = 3;
 const MAX_ATTEMPTS = 6;
@@ -53,14 +46,6 @@ const TEST_STRINGS = [
   "perché",
   "città",
 ];
-
-/**
- * What the model reads. The audio key still comes from the original text.
- * A slash between alternatives ("sette / sete") becomes a short pause;
- * read as-is, the model says "barra".
- */
-const forSpeech = (text: string) =>
-  text.replace(/([.?!…])\s*\/\s*/g, "$1 ").replace(/\s*\/\s*/g, ", ");
 
 // ── Paths ────────────────────────────────────────────────────────────────────
 const ROOT = resolve(__dirname, "..");

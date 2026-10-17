@@ -4,17 +4,30 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { phrasebook } from "@/content/phrasebook";
 import type { Phrase } from "@/content/types";
+import { ADDED_GROUP, type AddedPhrase } from "@/lib/added-phrases";
 import { speak, stop } from "@/lib/audio";
 import { fold } from "@/lib/text";
+import { AddError, useAddedPhrases } from "./added-phrases";
 import { useDispatch, useProgress } from "./progress/provider";
-import { IconChevronDown, IconRotate, IconSearch, IconStar, IconX } from "./ui/icons";
+import { IconChevronDown, IconPlus, IconRotate, IconSearch, IconStar, IconX } from "./ui/icons";
 import { SpeakButton } from "./ui/speak-button";
 import { useT } from "@/lib/locale";
 
-const byId = new Map(phrasebook.flatMap((g) => g.phrases.map((p) => [p.id, p] as const)));
+const builtIn = phrasebook.flatMap((g) => g.phrases.map((p) => [p.id, p] as const));
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-function Row({ p, starred, onShow }: { p: Phrase; starred: boolean; onShow: (p: Phrase) => void }) {
+function Row({
+  p,
+  starred,
+  onShow,
+  onRemove,
+}: {
+  p: Phrase;
+  starred: boolean;
+  onShow: (p: Phrase) => void;
+  /** Added phrases can be taken out again. */
+  onRemove?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
   const toggle = () => setOpen((o) => !o);
@@ -80,16 +93,186 @@ function Row({ p, starred, onShow }: { p: Phrase; starred: boolean; onShow: (p: 
                   type="button"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onShow(p)}
-                  className="flex h-11 items-center rounded-full border border-line bg-card px-4 text-[14px] font-semibold text-ink-2 transition-colors hover:text-ink"
+                  className="flex h-11 items-center rounded-full border border-line bg-card px-4 text-[14px] font-semibold whitespace-nowrap text-ink-2 transition-colors hover:text-ink"
                 >
                   Show someone
                 </motion.button>
+                {onRemove && <RemoveButton onRemove={onRemove} />}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </li>
+  );
+}
+
+/** Asks once more before taking a phrase out for both of you. */
+function RemoveButton({ onRemove }: { onRemove: () => void }) {
+  const t = useT();
+  const [sure, setSure] = useState(false);
+  useEffect(() => {
+    if (!sure) return;
+    const id = setTimeout(() => setSure(false), 3000);
+    return () => clearTimeout(id);
+  }, [sure]);
+  return (
+    <motion.button
+      type="button"
+      whileTap={{ scale: 0.95 }}
+      onClick={() => (sure ? onRemove() : setSure(true))}
+      className={`ml-auto flex h-11 items-center rounded-full px-2 text-[14px] whitespace-nowrap font-semibold transition-colors ${
+        sure ? "bg-wrong-soft text-wrong" : "text-ink-3 hover:text-ink"
+      }`}
+    >
+      {sure ? t("Tap to remove", "Tocca per rimuovere") : t("Remove", "Rimuovi")}
+    </motion.button>
+  );
+}
+
+const STAGES = { translating: 0.45, recording: 0.9, ready: 1, failed: 1 } as const;
+
+/** A phrase on its way: a bar that creeps through translating, then recording. Or why it failed. */
+function PendingRow({ p, onRetry, onDismiss }: { p: AddedPhrase; onRetry: () => void; onDismiss: () => void }) {
+  const t = useT();
+  const failed = p.status === "failed";
+  return (
+    <motion.li
+      layout
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25, ease: EASE }}
+      className="py-3"
+      aria-live="polite"
+    >
+      <div className="flex items-center gap-3">
+        <span className={`grid size-8 shrink-0 place-items-center rounded-full ${failed ? "bg-wrong-soft text-wrong" : "bg-mark-soft text-mark"}`}>
+          {failed ? (
+            <IconX size={15} strokeWidth={2.5} />
+          ) : (
+            <motion.span
+              className="block size-3.5 rounded-full border-2 border-current border-t-transparent"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 0.9, ease: "linear", repeat: Infinity }}
+            />
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[17px] leading-snug font-semibold text-ink">“{p.query}”</p>
+          <p className={`text-[14px] leading-snug ${failed ? "text-wrong" : "text-ink-2"}`}>
+            {failed
+              ? (p.error ?? t("Couldn't add it.", "Non è stato possibile aggiungerla."))
+              : p.status === "translating"
+                ? t("Translating…", "Traduzione…")
+                : t("Recording the audio…", "Registrazione dell'audio…")}
+          </p>
+        </div>
+      </div>
+      {failed ? (
+        <div className="mt-2 flex gap-2 pl-11">
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.95 }}
+            onClick={onRetry}
+            className="flex h-11 items-center rounded-full border border-line bg-card px-4 text-[14px] font-semibold text-ink"
+          >
+            {t("Try again", "Riprova")}
+          </motion.button>
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.95 }}
+            onClick={onDismiss}
+            className="flex h-11 items-center rounded-full px-3 text-[14px] font-semibold text-ink-3 hover:text-ink"
+          >
+            {t("Dismiss", "Ignora")}
+          </motion.button>
+        </div>
+      ) : (
+        <div className="mt-2.5 ml-11 h-1 overflow-hidden rounded-full bg-paper-2">
+          <motion.div
+            className="h-full rounded-full bg-mark"
+            initial={{ width: "4%" }}
+            animate={{ width: `${STAGES[p.status] * 100}%` }}
+            // Slow on purpose: it creeps toward the end of the stage while the server works.
+            transition={{ duration: p.status === "translating" ? 12 : 8, ease: [0.1, 0.6, 0.3, 1] }}
+          />
+        </div>
+      )}
+    </motion.li>
+  );
+}
+
+/**
+ * Offered whenever there is a search: front and centre when nothing matched,
+ * a quiet line under the results when something did.
+ */
+function AddPrompt({ q, empty, onAdd }: { q: string; empty: boolean; onAdd: (q: string) => Promise<void> }) {
+  const t = useT();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const add = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await onAdd(q);
+    } catch (e) {
+      const msg = e instanceof AddError ? e.message : "failed";
+      setError(
+        msg === "offline"
+          ? t("You're offline. Try again when you have signal.", "Sei offline. Riprova quando hai campo.")
+          : msg === "failed"
+            ? t("Couldn't send it. Try again.", "Invio non riuscito. Riprova.")
+            : msg,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const errorLine = error && <p className="mt-2 text-[14px] text-wrong">{error}</p>;
+
+  if (!empty)
+    return (
+      <div className="border-t border-line pt-4 text-center">
+        <button type="button" onClick={add} disabled={busy} className="text-[15px] text-ink-2 disabled:opacity-60">
+          {t("Not what you need?", "Non è quella giusta?")}{" "}
+          <span className="font-semibold text-accent underline decoration-accent/40 underline-offset-4">
+            {t(`Add “${q}”`, `Aggiungi “${q}”`)}
+          </span>
+        </button>
+        {errorLine}
+      </div>
+    );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: EASE }}
+      className="py-10 text-center"
+    >
+      <p className="font-display text-[24px] text-ink-2 italic">Niente.</p>
+      <p className="mt-1 text-[15px] text-ink-3">{t(`No phrase matches “${q}” yet.`, `Nessuna frase per “${q}”, per ora.`)}</p>
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.97 }}
+        onClick={add}
+        disabled={busy}
+        className="mx-auto mt-5 flex h-12 max-w-full items-center gap-2 rounded-full bg-accent px-5 text-[16px] font-semibold text-accent-ink shadow-[0_4px_0_var(--accent-press)] transition-opacity active:translate-y-[4px] active:shadow-none disabled:opacity-70"
+      >
+        <IconPlus size={18} strokeWidth={2.5} className="shrink-0" />
+        <span className="truncate">{t(`Add “${q}”`, `Aggiungi “${q}”`)}</span>
+      </motion.button>
+      <p className="mx-auto mt-3 max-w-72 text-[13px] leading-snug text-ink-3">
+        {t(
+          "It gets translated and recorded in a few seconds, then it's in the phrasebook for everyone.",
+          "Viene tradotta e registrata in pochi secondi, poi è nel frasario per tutti.",
+        )}
+      </p>
+      {errorLine}
+    </motion.div>
   );
 }
 
@@ -294,6 +477,7 @@ function useScrollSpy(ids: string[], offset: () => number, enabled: boolean) {
 export function Phrasebook() {
   const progress = useProgress();
   const t = useT();
+  const added = useAddedPhrases();
   const [q, setQ] = useState("");
   const query = useDeferredValue(fold(q.trim()));
   const [showing, setShowing] = useState<Phrase | null>(null);
@@ -301,15 +485,28 @@ export function Phrasebook() {
   const bar = useRef<HTMLDivElement>(null);
   const chips = useRef<HTMLDivElement>(null);
 
+  const addedById = useMemo(() => new Map(added.phrases.map((p) => [p.id, p])), [added.phrases]);
   const groups = useMemo(() => {
+    const ready = added.phrases.filter((p) => p.status === "ready");
+    const byId = new Map<string, Phrase>([...builtIn, ...ready.map((p) => [p.id, p] as const)]);
     const saved = progress.starred.map((id) => byId.get(id)).filter((p): p is Phrase => !!p);
-    const all = [...(saved.length ? [{ id: "saved", title: "Saved", it: t("Saved", "Preferiti"), phrases: saved }] : []), ...phrasebook];
+    // Newest first, so a phrase just added sits at the top of its group.
+    const mine: Phrase[] = added.phrases;
+    const all = [
+      ...(saved.length ? [{ id: "saved", title: "Saved", it: t("Saved", "Preferiti"), phrases: saved }] : []),
+      ...(mine.length ? [{ id: ADDED_GROUP, title: "From your searches", it: t("Added", "Aggiunte"), phrases: mine }] : []),
+      ...phrasebook,
+    ];
     if (!query) return all;
+    // An added phrase also matches what was typed to ask for it.
+    const text = (p: Phrase) => `${p.it} ${p.en} ${addedById.get(p.id)?.query ?? ""}`;
     return all
       .filter((g) => g.id !== "saved")
-      .map((g) => ({ ...g, phrases: g.phrases.filter((p) => fold(`${p.it} ${p.en}`).includes(query)) }))
+      .map((g) => ({ ...g, phrases: g.phrases.filter((p) => fold(text(p)).includes(query)) }))
       .filter((g) => g.phrases.length);
-  }, [progress.starred, query, t]);
+  }, [added.phrases, addedById, progress.starred, query, t]);
+  // Offer to add the search unless it was already asked for.
+  const asked = !!query && added.phrases.some((p) => fold(p.query) === query);
 
   const ids = useMemo(() => groups.map((g) => g.id), [groups]);
   // Where the sticky bar ends once stuck (not where it happens to be now).
@@ -384,18 +581,33 @@ export function Phrasebook() {
               {query && <span className="ml-auto font-mono text-[11px] font-bold text-ink-3">{g.phrases.length}</span>}
             </h2>
             <ul className="divide-y divide-line/60">
-              {g.phrases.map((p) => (
-                <Row key={`${g.id}-${p.id}`} p={p} starred={starred.has(p.id)} onShow={setShowing} />
-              ))}
+              <AnimatePresence initial={false}>
+                {g.phrases.map((p) => {
+                  const a = addedById.get(p.id);
+                  if (a && a.status !== "ready")
+                    return (
+                      <PendingRow
+                        key={`${g.id}-${p.id}`}
+                        p={a}
+                        onRetry={() => void added.add(a.query).catch(() => {})}
+                        onDismiss={() => void added.remove(a.id)}
+                      />
+                    );
+                  return (
+                    <Row
+                      key={`${g.id}-${p.id}`}
+                      p={p}
+                      starred={starred.has(p.id)}
+                      onShow={setShowing}
+                      onRemove={a && g.id === ADDED_GROUP ? () => void added.remove(a.id) : undefined}
+                    />
+                  );
+                })}
+              </AnimatePresence>
             </ul>
           </section>
         ))}
-        {groups.length === 0 && (
-          <div className="py-14 text-center">
-            <p className="font-display text-[24px] text-ink-2 italic">Niente.</p>
-            <p className="mt-1 text-[15px] text-ink-3">No phrase matches “{q.trim()}”. Try English or Italian.</p>
-          </div>
-        )}
+        {query && !asked && <AddPrompt key={query} q={q.trim()} empty={groups.length === 0} onAdd={added.add} />}
       </div>
 
       <AnimatePresence>{showing && <ShowCard key={showing.id} phrase={showing} onClose={close} />}</AnimatePresence>
