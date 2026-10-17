@@ -31,7 +31,7 @@ const draftSchema = z.object({
 
 const SYSTEM = `You write entries for a phrasebook in a travel app. The learners are English speakers who also speak Spanish, on a trip to Italy. They searched the phrasebook for something and found nothing, so they asked for it to be added.
 
-The request may be in English, Spanish or Italian, and may be a whole sentence, a few keywords or a situation ("ask for the wifi password"). Write the one Italian phrase they most likely want to say.
+The request may be in English, Spanish or Italian, and may be a whole sentence, a few keywords, a single word or topic ("the culture", "pharmacy") or a situation ("ask for the wifi password"). Write the one Italian phrase they most likely want to say. A bare word or topic is fine: give the word itself with its article, like "La cultura", or a short phrase built on it when that is clearly more useful.
 
 Rules:
 - it: natural, polite spoken Italian, as you would say it to a stranger, a waiter or a clerk (Lei form). Sentence case, standard punctuation, correct accents. Keep it short.
@@ -39,12 +39,13 @@ Rules:
 - say: pronunciation for an English reader, stressed syllables in CAPS, words separated by spaces, syllables by hyphens.
 - note: at most one short sentence of practical advice (when to use it, what you'll hear back, a cultural catch). Leave it empty unless it helps.
 - Fix spelling mistakes in the request. If the request is already Italian, correct it if needed and use it.
-- ok is false only for gibberish, or for something no one would say.
+- ok is false only for gibberish or abusive requests. When in doubt, write the entry: a plain word is always something to say.
 
 Examples of entries:
 {"it":"Il conto, per favore","en":"The bill, please","say":"eel KOHN-toh, pehr fah-VOH-reh","note":"It won't come until you ask. A per-person 'coperto' on it is normal."}
 {"it":"Dov'è il bagno?","en":"Where's the bathroom?","say":"doh-VEH eel BAHN-yoh","note":"In a bar, buy something first; it's only fair."}
 {"it":"Contiene glutine?","en":"Does it contain gluten?","say":"kohn-TYEH-neh GLOO-tee-neh","note":"Look for 'senza glutine' on menus; Italy is good at it."}
+{"it":"La cultura","en":"The culture","say":"lah kool-TOO-rah","note":""}
 {"it":"Può parlare più piano?","en":"Can you speak more slowly?","say":"pwoh par-LAH-reh pyoo PYAH-noh","note":""}`;
 
 class UserFacingError extends Error {}
