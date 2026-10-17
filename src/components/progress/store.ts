@@ -137,7 +137,11 @@ export class ProgressStore {
     this.loading = true;
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const res = await fetch(`/api/progress?tz=${encodeURIComponent(tz)}`, { cache: "no-store" });
+      // Spotty signal can hang a request forever, and flushes wait on loads: give up and retry instead.
+      const res = await fetch(`/api/progress?tz=${encodeURIComponent(tz)}`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(15_000),
+      });
       if (!res.ok) throw new Error(String(res.status));
       this.server = (await res.json()) as Snapshot;
       this.write("snapshot", this.server);
@@ -174,6 +178,7 @@ export class ProgressStore {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ops: batch }),
         keepalive,
+        signal: AbortSignal.timeout(20_000),
       });
       if (!res.ok) throw new Error(String(res.status));
       const sent = new Set(batch.map((o) => o.id));
