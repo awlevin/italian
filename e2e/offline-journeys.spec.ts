@@ -263,3 +263,39 @@ test("after hours offline (sign-in token expired), progress still syncs on recon
   await reconnect(page, context);
   await expect(page.getByRole("heading", { name: "Phrasebook" })).toBeVisible();
 });
+
+test("leaving and moving on from a lesson work offline", async ({ page, context }) => {
+  await setUp(page);
+  const lesson = [...course].slice(0, -1).sort((a, b) => a.steps.length - b.steps.length)[0];
+  const next = course[course.indexOf(lesson) + 1];
+  await context.setOffline(true);
+
+  // Finish a lesson, then take the next stop.
+  await startLesson(page, lesson.id);
+  for (const step of lesson.steps) {
+    await solve(page, step);
+    await page.waitForTimeout(250);
+  }
+  await expect(page.getByRole("heading", { name: "Well done!" })).toBeVisible();
+  await page.getByRole("button", { name: new RegExp(`Prossima fermata: ${next.city}`) }).click();
+  await expect(page.getByRole("heading", { name: next.city })).toBeVisible({ timeout: 6_000 });
+
+  // Start it, answer one card, and leave.
+  await startLesson(page, next.id);
+  await solve(page, next.steps[0]);
+  await page.waitForTimeout(250);
+  await page.getByRole("button", { name: "Leave", exact: true }).click();
+  await page.getByRole("dialog", { name: "Leave the lesson?" }).getByRole("button", { name: "Leave" }).click();
+  await expect(page.getByRole("heading", { name: "Stops" })).toBeVisible({ timeout: 6_000 });
+
+  // Finish again and go back to the journey.
+  await startLesson(page, lesson.id);
+  for (const step of lesson.steps) {
+    await solve(page, step);
+    await page.waitForTimeout(250);
+  }
+  await page.getByRole("button", { name: "Back to the journey" }).click();
+  await expect(page.getByRole("heading", { name: "Stops" })).toBeVisible({ timeout: 6_000 });
+
+  await reconnect(page, context);
+});
