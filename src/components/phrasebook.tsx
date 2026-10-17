@@ -9,7 +9,7 @@ import { speak, stop } from "@/lib/audio";
 import { fold } from "@/lib/text";
 import { AddError, useAddedPhrases } from "./added-phrases";
 import { useDispatch, useProgress } from "./progress/provider";
-import { IconChevronDown, IconPlus, IconRotate, IconSearch, IconStar, IconX } from "./ui/icons";
+import { IconChevronDown, IconPlus, IconRotate, IconSearch, IconStar, IconTrash, IconX } from "./ui/icons";
 import { SpeakButton } from "./ui/speak-button";
 import { useT } from "@/lib/locale";
 
@@ -69,7 +69,7 @@ function Row({
                 {p.say}
               </p>
               {p.note && <p className="text-[14px] leading-snug text-ink-2">{p.note}</p>}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex gap-2">
                 <motion.button
                   type="button"
                   whileTap={{ scale: 0.95 }}
@@ -107,7 +107,10 @@ function Row({
   );
 }
 
-/** Asks once more before taking a phrase out for both of you. */
+/**
+ * A small bin at the end of the action row. The first tap arms it and a bubble
+ * asks for a second; nothing in the row moves.
+ */
 function RemoveButton({ onRemove }: { onRemove: () => void }) {
   const t = useT();
   const [sure, setSure] = useState(false);
@@ -117,16 +120,36 @@ function RemoveButton({ onRemove }: { onRemove: () => void }) {
     return () => clearTimeout(id);
   }, [sure]);
   return (
-    <motion.button
-      type="button"
-      whileTap={{ scale: 0.95 }}
-      onClick={() => (sure ? onRemove() : setSure(true))}
-      className={`ml-auto flex h-11 items-center rounded-full px-2 text-[14px] whitespace-nowrap font-semibold transition-colors ${
-        sure ? "bg-wrong-soft text-wrong" : "text-ink-3 hover:text-ink"
-      }`}
-    >
-      {sure ? t("Remove?", "Rimuovere?") : t("Remove", "Rimuovi")}
-    </motion.button>
+    <div className="relative ml-auto">
+      <AnimatePresence>
+        {sure && (
+          <motion.span
+            role="status"
+            initial={{ opacity: 0, y: 4, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.92 }}
+            transition={{ duration: 0.16, ease: EASE }}
+            className="absolute right-0 bottom-full mb-2 origin-bottom-right rounded-lg bg-wrong px-2.5 py-1.5 text-[12px] font-semibold whitespace-nowrap text-paper shadow-card"
+          >
+            {t("Tap again to remove", "Tocca di nuovo")}
+            <span className="absolute top-full right-4 size-2 -translate-y-1 rotate-45 bg-wrong" />
+          </motion.span>
+        )}
+      </AnimatePresence>
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.9 }}
+        animate={sure ? { rotate: [0, -12, 10, -6, 0] } : { rotate: 0 }}
+        transition={{ duration: 0.4 }}
+        onClick={() => (sure ? onRemove() : setSure(true))}
+        aria-label={sure ? t("Confirm remove", "Conferma rimozione") : t("Remove from the phrasebook", "Rimuovi dal frasario")}
+        className={`grid size-11 place-items-center rounded-full border transition-colors ${
+          sure ? "border-wrong bg-wrong-soft text-wrong" : "border-transparent text-ink-3 hover:text-ink"
+        }`}
+      >
+        <IconTrash size={18} />
+      </motion.button>
+    </div>
   );
 }
 
