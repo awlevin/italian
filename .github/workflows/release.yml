@@ -1,0 +1,26 @@
+name: Release
+
+# Tags and publishes a GitHub release whenever main carries a version
+# (package.json) that hasn't been released yet.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Release the version in package.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if gh release view "$version" >/dev/null 2>&1; then
+            echo "$version is already released."
+          else
+            gh release create "$version" --target "$GITHUB_SHA" --title "$version" --generate-notes
+          fi

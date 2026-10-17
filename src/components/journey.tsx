@@ -6,6 +6,7 @@ import { createContext, use, useEffect, useState } from "react";
 import { itemById, lines, type LineId } from "@/content/course";
 import type { Lesson } from "@/content/types";
 import { dueItemIds, learnedCount, streak } from "@/lib/stats";
+import { AppVersion } from "./app-version";
 import { OfflineCard } from "./offline-card";
 import { useProgress, useProgressReady } from "./progress/provider";
 import { ButtonLink } from "./ui/button";
@@ -73,6 +74,7 @@ export function Journey() {
       </Intro>
       <OfflineCard />
       <LanguageSetting />
+      <AppVersion />
     </div>
   );
 }

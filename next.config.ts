@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import pkg from "./package.json";
 
 /**
  * Security headers for every response.
@@ -24,6 +25,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Shown, very quietly, at the bottom of the home screen. Vercel sets the commit.
+  env: {
+    NEXT_PUBLIC_APP_VERSION: pkg.version,
+    NEXT_PUBLIC_COMMIT: (process.env.VERCEL_GIT_COMMIT_SHA ?? "dev").slice(0, 7),
+  },
   cacheComponents: true,
   devIndicators: false,
   partialPrefetching: true,
