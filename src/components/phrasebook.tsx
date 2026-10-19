@@ -2,17 +2,16 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { phrasebook } from "@/content/phrasebook";
 import { ruleById, ruleHref } from "@/content/rules";
 import type { Phrase } from "@/content/types";
 import { ADDED_GROUP, type AddedPhrase, type Details, isPending, kindOf, WORDS_GROUP } from "@/lib/added-phrases";
 import { speak, stop } from "@/lib/audio";
-import { fold } from "@/lib/text";
+import { fold, plain } from "@/lib/text";
 import { AddError, useAddedPhrases } from "./added-phrases";
 import { useDispatch, useProgress } from "./progress/provider";
-import { IconArrowRight, IconBridge, IconChevronDown, IconLightbulb, IconPlus, IconRotate, IconSearch, IconStar, IconTrash, IconX } from "./ui/icons";
-import { Rich } from "./ui/rich";
+import { IconArrowRight, IconChevronDown, IconPlus, IconRotate, IconSearch, IconStar, IconTrash, IconX } from "./ui/icons";
 import { SpeakButton } from "./ui/speak-button";
 import { useT } from "@/lib/locale";
 
@@ -21,95 +20,99 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 /** Your own groups show this many until opened, so Saved and the rest stay close. */
 const PEEK = 5;
 
-const POS = { noun: "noun", verb: "verb", adjective: "adj.", adverb: "adv.", other: "" } as const;
-
-const Eyebrow = ({ children }: { children: React.ReactNode }) => (
-  <span className="mr-1.5 font-mono text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">{children}</span>
-);
-
-/** Small Italian chips that play when tapped: a word's forms, or a phrase's building blocks. */
-function Chips({ items }: { items: { it: string; en?: string }[] }) {
+/** Italian that plays when tapped, marked only by a faint dotted underline. */
+function Say({ it, className = "" }: { it: string; className?: string }) {
   return (
-    <ul className="flex flex-wrap gap-1.5">
-      {items.map((x, i) => (
-        <li key={i}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              speak(x.it);
-            }}
-            aria-label={`Play “${x.it}”`}
-            className="flex min-h-11 flex-col items-start justify-center rounded-xl border border-line bg-card px-3 py-1.5 text-left transition-colors active:bg-paper-2"
-          >
-            <span lang="it" className="text-[15px] leading-tight font-semibold text-ink">
-              {x.it}
-            </span>
-            {x.en && <span className="text-[12px] leading-tight text-ink-3">{x.en}</span>}
-          </button>
-        </li>
-      ))}
-    </ul>
+    <button
+      type="button"
+      lang="it"
+      onClick={(e) => {
+        e.stopPropagation();
+        speak(it);
+      }}
+      aria-label={`Play “${it}”`}
+      className={`text-left text-ink underline decoration-ink-3/35 decoration-dotted underline-offset-4 transition-colors active:text-accent ${className}`}
+    >
+      {it}
+    </button>
   );
 }
 
-/** What an added entry teaches: its forms or parts, the Spanish bridge, the grammar and the lesson behind it. */
-function Learn({ d }: { d: Details }) {
-  const t = useT();
-  const rule = d.rule ? ruleById.get(d.rule) : undefined;
+/**
+ * How to say a phrase and what it teaches, as one quiet list: a small label
+ * on the left, plain text on the right, nothing boxed.
+ */
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <>
-      {d.kind === "word" && d.forms.length > 1 && <Chips items={d.forms.map((it) => ({ it }))} />}
-      {d.kind === "phrase" && d.parts.length > 1 && <Chips items={d.parts} />}
-      {d.kind === "word" && d.example.it && (
-        <div className="flex items-center gap-2.5 rounded-xl bg-paper-2/70 py-2 pr-3 pl-2">
-          <SpeakButton text={d.example.it} size="sm" label={`Play “${d.example.it}”`} />
-          <div className="min-w-0">
-            <p lang="it" className="text-[15px] leading-snug text-ink">
-              {d.example.it}
-            </p>
-            <p className="text-[13px] leading-snug text-ink-3">{d.example.en}</p>
-          </div>
-        </div>
-      )}
-      {(d.es || d.bridge) && (
-        <p className="flex gap-2 text-[14px] leading-snug text-ink-2">
-          <IconBridge size={16} className="mt-0.5 shrink-0 text-bridge" />
-          <span>
-            {d.es && (
-              <span className="font-medium text-bridge italic" lang="es">
-                {d.es}
-                {d.bridge && " — "}
-              </span>
-            )}
-            {d.bridge && <Rich text={d.bridge} />}
-          </span>
-        </p>
-      )}
-      {d.grammar && (
-        <p className="flex gap-2 text-[14px] leading-snug text-ink-2">
-          <IconLightbulb size={16} className="mt-0.5 shrink-0 text-mark" />
-          <span>
-            <Rich text={d.grammar} />
-          </span>
-        </p>
-      )}
-      {rule && (
-        <Link
-          href={ruleHref(rule, "/phrasebook")}
-          onClick={(e) => e.stopPropagation()}
-          className="flex min-h-11 items-center gap-3 rounded-xl border border-line bg-card px-3 py-2 transition-colors active:bg-paper-2"
-        >
-          <div className="min-w-0 flex-1">
-            <p className="font-mono text-[10px] font-bold tracking-[0.16em] text-accent uppercase">
-              {t("The rule", "La regola")} · {rule.lesson.city}
-            </p>
-            <p className="truncate text-[15px] leading-snug font-semibold text-ink">{rule.title}</p>
-          </div>
-          <IconArrowRight size={18} className="shrink-0 text-ink-3" />
-        </Link>
-      )}
+      <dt className="font-mono text-[10px] font-bold tracking-[0.14em] text-ink-3 uppercase">{label}</dt>
+      <dd className="min-w-0 text-[14px] leading-snug text-ink-2">{children}</dd>
     </>
+  );
+}
+
+function Facts({ p, d }: { p: Phrase; d?: Details | null }) {
+  const t = useT();
+  const rule = d?.rule ? ruleById.get(d.rule) : undefined;
+  const word = d?.kind === "word";
+  return (
+    <dl className="grid grid-cols-[3rem_1fr] items-baseline gap-x-3 gap-y-3">
+      <Fact label={t("Say", "Pron.")}>
+        <span className="font-mono text-[13px]">{p.say}</span>
+      </Fact>
+      {word && d.forms.length > 1 && (
+        <Fact label={t("Forms", "Forme")}>
+          <span className="text-[15px]">
+            {d.forms.map((f, i) => (
+              <Fragment key={f}>
+                {i > 0 && <span className="text-ink-3"> · </span>}
+                <Say it={f} />
+              </Fragment>
+            ))}
+          </span>
+        </Fact>
+      )}
+      {d?.kind === "phrase" && d.parts.length > 1 && (
+        <Fact label={t("Parts", "Parti")}>
+          <span className="flex flex-wrap gap-x-3.5 gap-y-1.5">
+            {d.parts.map((x, i) => (
+              <span key={i} className="flex flex-col">
+                <Say it={x.it} className="text-[15px] leading-tight" />
+                <span className="text-[12px] leading-tight text-ink-3">{x.en}</span>
+              </span>
+            ))}
+          </span>
+        </Fact>
+      )}
+      {word && d.example.it && (
+        <Fact label={t("E.g.", "Es.")}>
+          <Say it={d.example.it} className="block text-[15px]" />
+          <span className="text-[13px] text-ink-3">{d.example.en}</span>
+        </Fact>
+      )}
+      {d?.es && (
+        <Fact label="ES">
+          <span lang="es" className="text-bridge italic">
+            {d.es}
+          </span>
+          {d.bridge && <span className="text-ink-3"> · {plain(d.bridge)}</span>}
+        </Fact>
+      )}
+      {d?.grammar && <Fact label={t("Why", "Perché")}>{plain(d.grammar)}</Fact>}
+      {p.note && <Fact label={t("Tip", "Nota")}>{p.note}</Fact>}
+      {rule && (
+        <Fact label={t("Rule", "Regola")}>
+          <Link
+            href={ruleHref(rule, "/phrasebook")}
+            onClick={(e) => e.stopPropagation()}
+            className="-my-3 inline-flex min-h-11 items-center gap-1.5 font-semibold text-accent"
+          >
+            {rule.title}
+            <IconArrowRight size={15} className="shrink-0" />
+          </Link>
+        </Fact>
+      )}
+    </dl>
   );
 }
 
@@ -132,7 +135,6 @@ function Row({
   fresh?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const pos = details?.kind === "word" ? POS[details.pos] : "";
   const dispatch = useDispatch();
   const toggle = () => setOpen((o) => !o);
   return (
@@ -161,10 +163,7 @@ function Row({
             {p.it}
             {starred && <IconStar size={13} filled className="ml-1.5 inline -translate-y-px text-mark" />}
           </p>
-          <p className="text-[14px] leading-snug text-ink-2">
-            {p.en}
-            {pos && <span className="ml-2 font-mono text-[10px] font-bold tracking-[0.12em] text-ink-3 uppercase">{pos}</span>}
-          </p>
+          <p className="text-[14px] leading-snug text-ink-2">{p.en}</p>
         </div>
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25, ease: EASE }} className="shrink-0 text-ink-3">
           <IconChevronDown size={18} />
@@ -179,13 +178,8 @@ function Row({
             transition={{ duration: 0.26, ease: EASE }}
             className="overflow-hidden"
           >
-            <div className="space-y-3 pb-4 pl-11">
-              <p className="font-mono text-[13px] leading-relaxed text-ink-2">
-                <Eyebrow>Say</Eyebrow>
-                {p.say}
-              </p>
-              {details && <Learn d={details} />}
-              {p.note && <p className="text-[14px] leading-snug text-ink-2">{p.note}</p>}
+            <div className="space-y-4 pb-4 pl-11">
+              <Facts p={p} d={details} />
               <div className="flex gap-2">
                 <motion.button
                   type="button"
