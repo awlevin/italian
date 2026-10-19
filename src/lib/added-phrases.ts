@@ -36,6 +36,8 @@ export interface AddedPhrase extends Phrase {
   createdAt: string;
   /** Null until described: being written, or added before entries had details. */
   details?: Details | null;
+  /** Ready, and its details are being written now: worth asking again shortly. */
+  describing?: boolean;
 }
 
 export const addPhraseSchema = z.object({ query: z.string().trim().min(2).max(140) });
@@ -44,6 +46,9 @@ export const addPhraseSchema = z.object({ query: z.string().trim().min(2).max(14
 export const STALE_MS = 90_000;
 
 export const isPending = (p: Pick<AddedPhrase, "status">) => p.status === "translating" || p.status === "recording";
+
+/** How long a describe may run before another load may try again. */
+export const DESCRIBE_LEASE_MS = 60_000;
 
 /**
  * A word or a phrase. The model decides once it has described the entry;

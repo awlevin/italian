@@ -1,13 +1,13 @@
 import "server-only";
 import { put } from "@vercel/blob";
 import { generateText, Output } from "ai";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import manifest from "@/content/audio-manifest.json";
 import { db } from "@/db";
 import { addedPhrase } from "@/db/schema";
 import { ruleById, rules } from "@/content/rules";
-import { type Details, detailsSchema } from "./added-phrases";
+import { DESCRIBE_LEASE_MS, type Details, detailsSchema } from "./added-phrases";
 import { audioKey, plain } from "./text";
 import { forSpeech, LANGUAGE_CODE, MODEL_ID, OUTPUT_FORMAT, SEED, VOICE_ID, VOICE_SETTINGS } from "./voice";
 
@@ -100,7 +100,8 @@ export async function describe(p: { it: string; en: string }): Promise<Details |
       output: Output.object({ schema: detailsSchema }),
       // Runs alongside the recording, so it can afford a little thought.
       providerOptions: { gateway: { models: FALLBACK_MODELS }, openai: { reasoningEffort: "low" } },
-      maxRetries: 2,
+      maxRetries: 1,
+      abortSignal: AbortSignal.timeout(DESCRIBE_LEASE_MS / 2),
     });
     const clean = (s: string) => s.replace(/\s+/g, " ").trim().normalize("NFC");
     const word = output.kind === "word";
@@ -168,9 +169,10 @@ export async function generatePhrase(id: string, query: string) {
   try {
     const d = await draft(query);
     await set(id, { status: "recording", ...d });
-    // Described while it records, so it costs no extra wait.
-    const [audioUrl, details] = await Promise.all([record(d.it), describe(d)]);
-    await set(id, { status: "ready", audioUrl, details, error: null });
+    const audioUrl = await record(d.it);
+    // Ready to say now; what it teaches follows a few seconds later.
+    await set(id, { status: "ready", audioUrl, error: null, detailsTriedAt: new Date() });
+    await saveDetails(id, d.it, await describe(d));
   } catch (e) {
     console.error(`Adding phrase "${query}" failed:`, e);
     const error = e instanceof UserFacingError ? e.message : "Something went wrong. Try again.";
@@ -178,24 +180,33 @@ export async function generatePhrase(id: string, query: string) {
   }
 }
 
-/** Rows being described by this instance, so overlapping loads don't ask twice. */
-const describing = new Set<string>();
+/** Only if it is still the same entry: asking again rewrites the row. */
+async function saveDetails(id: string, it: string, details: Details | null) {
+  if (!details) return;
+  await db
+    .update(addedPhrase)
+    .set({ details })
+    .where(and(eq(addedPhrase.id, id), eq(addedPhrase.status, "ready"), eq(addedPhrase.it, it), isNull(addedPhrase.details)))
+    .catch((e) => console.error(e));
+}
 
-/** Fills in details for ready phrases added before entries had them, a few per call. */
-export async function describeMissing(rows: { id: string; it: string | null; en: string | null }[]) {
-  const todo = rows.filter((r) => r.it && !describing.has(r.id)).slice(0, 6);
-  todo.forEach((r) => describing.add(r.id));
-  await Promise.all(
-    todo.map(async (r) => {
-      const details = await describe({ it: r.it!, en: r.en ?? "" });
-      // Only if it is still the same entry: asking again rewrites the row.
-      if (details)
-        await db
-          .update(addedPhrase)
-          .set({ details })
-          .where(and(eq(addedPhrase.id, r.id), eq(addedPhrase.status, "ready"), eq(addedPhrase.it, r.it!), isNull(addedPhrase.details)))
-          .catch((e) => console.error(e));
-      describing.delete(r.id);
-    }),
-  );
+/**
+ * Fills in details for ready phrases added before entries had them, a few per
+ * call. Each row is claimed first, so overlapping loads on any instance skip
+ * it, and a failure waits out its lease before anyone tries again.
+ */
+export async function describeMissing(ids: string[]) {
+  const claimed = await db
+    .update(addedPhrase)
+    .set({ detailsTriedAt: new Date() })
+    .where(
+      and(
+        inArray(addedPhrase.id, ids.slice(0, 4)),
+        eq(addedPhrase.status, "ready"),
+        isNull(addedPhrase.details),
+        or(isNull(addedPhrase.detailsTriedAt), lt(addedPhrase.detailsTriedAt, new Date(Date.now() - 60 * DESCRIBE_LEASE_MS))),
+      ),
+    )
+    .returning({ id: addedPhrase.id, it: addedPhrase.it, en: addedPhrase.en });
+  await Promise.all(claimed.map(async (r) => r.it && saveDetails(r.id, r.it, await describe({ it: r.it, en: r.en ?? "" }))));
 }

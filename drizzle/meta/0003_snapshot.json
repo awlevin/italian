@@ -1,5 +1,5 @@
 {
-  "id": "fc58d13d-35da-4385-a08d-a811d0b8411c",
+  "id": "8409d612-4b98-44c6-b08a-ae0f2ad6c90e",
   "prevId": "9dc7bb63-c757-4312-ad16-7ab915826d2a",
   "version": "7",
   "dialect": "postgresql",
@@ -71,6 +71,12 @@
         "details": {
           "name": "details",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "details_tried_at": {
+          "name": "details_tried_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },

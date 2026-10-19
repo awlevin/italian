@@ -664,7 +664,10 @@ export function Phrasebook() {
     added.phrases.forEach((p) => isPending(p) && waiting.current.add(p.id));
     if (!done.length) return;
     done.forEach((p) => waiting.current.delete(p.id));
-    setFresh((f) => new Set([...f, ...done.map((p) => p.id)]));
+    const ids = done.map((p) => p.id);
+    setFresh((f) => new Set([...f, ...ids]));
+    // Once only: a row that remounts later (search, Show all) doesn't glow again.
+    setTimeout(() => setFresh((f) => new Set([...f].filter((id) => !ids.includes(id)))), 3000);
   }, [added.phrases]);
   // Offer to add the search unless it was already asked for.
   const asked = !!query && added.phrases.some((p) => fold(p.query) === query);

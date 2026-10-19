@@ -94,6 +94,8 @@ export const addedPhrase = pgTable(
     error: text("error"),
     /** Word or phrase, and what it teaches (`Details`). Null until described. */
     details: jsonb("details").$type<Details>(),
+    /** When describing last started: a lease, so overlapping loads and instances don't ask twice. */
+    detailsTriedAt: timestamp("details_tried_at", { withTimezone: true }),
     createdBy: text("created_by").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

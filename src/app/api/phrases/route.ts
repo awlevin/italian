@@ -2,7 +2,7 @@ import { and, count, desc, eq, gt, ne, or } from "drizzle-orm";
 import { after } from "next/server";
 import { db } from "@/db";
 import { addedPhrase } from "@/db/schema";
-import { addPhraseSchema, type AddedPhrase, isPending, STALE_MS } from "@/lib/added-phrases";
+import { addPhraseSchema, type AddedPhrase, DESCRIBE_LEASE_MS, isPending, STALE_MS } from "@/lib/added-phrases";
 import { currentUserId } from "@/lib/auth";
 import { describeMissing, generatePhrase } from "@/lib/phrase-gen";
 import { fold } from "@/lib/text";
@@ -28,6 +28,7 @@ function toPhrase(r: Row): AddedPhrase {
     audioUrl: r.audioUrl,
     error: stale ? "That took too long. Try again." : r.error,
     details: r.details,
+    describing: r.status === "ready" && !r.details && !!r.detailsTriedAt && Date.now() - r.detailsTriedAt.getTime() < DESCRIBE_LEASE_MS,
     createdAt: r.createdAt.toISOString(),
   };
 }
@@ -47,8 +48,9 @@ export async function GET() {
     .orderBy(desc(addedPhrase.createdAt))
     .limit(500);
   // Phrases added before entries had details get them in the background; the next load shows them.
-  const undescribed = rows.filter((r) => r.status === "ready" && !r.details);
-  if (undescribed.length) after(() => describeMissing(undescribed));
+  // Claimed before describing, so the 1.5 s polls and other instances don't ask twice; a failure retries an hour later.
+  const undescribed = rows.filter((r) => r.status === "ready" && !r.details && (!r.detailsTriedAt || Date.now() - r.detailsTriedAt.getTime() > 60 * DESCRIBE_LEASE_MS));
+  if (undescribed.length) after(() => describeMissing(undescribed.map((r) => r.id)));
   return json({ phrases: rows.map(toPhrase) });
 }
 
@@ -79,9 +81,10 @@ export async function POST(req: Request) {
   if (n >= DAILY_LIMIT) return json({ error: "limit", message: "That's a lot of new phrases for one day. Try again tomorrow." }, 429);
 
   const now = new Date();
-  const fresh = { query, status: "translating" as const, it: null, en: null, say: null, note: null, audioUrl: null, error: null, details: null, createdBy: userId, updatedAt: now };
+  const fresh = { query, status: "translating" as const, it: null, en: null, say: null, note: null, audioUrl: null, error: null, details: null, detailsTriedAt: null, createdBy: userId, updatedAt: now };
   const [row] = existing
-    ? await db.update(addedPhrase).set(fresh).where(eq(addedPhrase.id, existing.id)).returning()
+    ? // Asked again: it is new again, so it goes back to the top.
+      await db.update(addedPhrase).set({ ...fresh, createdAt: now }).where(eq(addedPhrase.id, existing.id)).returning()
     : await db
         .insert(addedPhrase)
         .values({ id: `added-${crypto.randomUUID().slice(0, 8)}`, queryKey, createdAt: now, ...fresh })
