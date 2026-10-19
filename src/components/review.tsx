@@ -305,7 +305,7 @@ function YourRules({ added, progress }: { added: AddedPhrase[]; progress: Snapsh
         {groups.map(({ rule, entries }) => (
           <li key={rule.id}>
             <Link
-              href={ruleHref(rule)}
+              href={ruleHref(rule, "/review")}
               className="group flex items-start gap-3 rounded-2xl border border-line bg-card p-4 shadow-card transition-[border-color,scale] hover:border-ink-3/40 active:scale-[0.99]"
             >
               <span className="min-w-0 flex-1 space-y-1.5">

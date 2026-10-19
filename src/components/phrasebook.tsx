@@ -96,7 +96,7 @@ function Learn({ d }: { d: Details }) {
       )}
       {rule && (
         <Link
-          href={ruleHref(rule)}
+          href={ruleHref(rule, "/phrasebook")}
           onClick={(e) => e.stopPropagation()}
           className="flex min-h-11 items-center gap-3 rounded-xl border border-line bg-card px-3 py-2 transition-colors active:bg-paper-2"
         >

@@ -34,7 +34,10 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const saved = progress.lessons[lesson.id];
   // ?step=<id> opens the lesson running at that card (a rule linked from Review).
   // It is a look at one card, so it never moves the saved seat.
-  const stepParam = useSearchParams().get("step");
+  const params = useSearchParams();
+  const stepParam = params.get("step");
+  // Only a path in this app: never another origin.
+  const back = /^\/(?!\/)/.test(params.get("back") ?? "") ? params.get("back")! : undefined;
   const [deepAt] = useState(() => (stepParam ? lesson.steps.findIndex((s) => s.id === stepParam) : -1));
   const deep = deepAt >= 0;
   const [stage, setStage] = useState<Stage>(deep ? "run" : "intro");
@@ -125,6 +128,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
               planTitle={planTitle}
               onAnswer={onAnswer}
               onAdvance={peek ? undefined : onAdvance}
+              exitHref={peek ? back : undefined}
               onFinish={onFinish}
             />
           </YourPhrasesContext>

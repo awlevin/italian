@@ -34,5 +34,6 @@ export const rules: Rule[] = allLessons.flatMap((lesson) =>
 
 export const ruleById = new Map(rules.map((r) => [r.id, r]));
 
-/** Opens the lesson on the card that teaches the rule. */
-export const ruleHref = (r: Rule) => `/lesson/${r.lesson.id}?step=${encodeURIComponent(r.stepId)}`;
+/** Opens the lesson on the card that teaches the rule; leaving it goes back to `back`. */
+export const ruleHref = (r: Rule, back: string) =>
+  `/lesson/${r.lesson.id}?step=${encodeURIComponent(r.stepId)}&back=${encodeURIComponent(back)}`;
