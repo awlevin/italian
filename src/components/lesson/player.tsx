@@ -2,11 +2,13 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { itemId, lineOf } from "@/content/course";
 import type { Lesson } from "@/content/types";
 import { isExercise } from "@/content/types";
+import { useAddedPhrases } from "@/components/added-phrases";
+import { Splash } from "@/components/auth-gate";
 import { useDispatch, useProgress, useProgressReady } from "@/components/progress/provider";
 import { Button } from "@/components/ui/button";
 import { IconArrowLeft, IconArrowRight, IconList } from "@/components/ui/icons";
@@ -17,7 +19,9 @@ import { LessonPlan, type PlanRow } from "./plan";
 import { Rail } from "./rail";
 import { Session, type SessionItem, type SessionResult } from "./session";
 import { Ticket } from "./ticket";
+import { YourPhrasesContext } from "./your-phrases";
 import { useT } from "@/lib/locale";
+import { byRule } from "@/lib/phrase-cards";
 
 type Stage = "intro" | "run" | "done";
 
@@ -28,8 +32,23 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const dispatch = useDispatch();
   const router = useRouter();
   const saved = progress.lessons[lesson.id];
-  const [stage, setStage] = useState<Stage>("intro");
-  const [startAt, setStartAt] = useState(0);
+  // ?step=<id> opens the lesson running at that card (a rule linked from Review).
+  // It is a look at one card, so it never moves the saved seat.
+  const stepParam = useSearchParams().get("step");
+  const [deepAt] = useState(() => (stepParam ? lesson.steps.findIndex((s) => s.id === stepParam) : -1));
+  const deep = deepAt >= 0;
+  const [stage, setStage] = useState<Stage>(deep ? "run" : "intro");
+  const [startAt, setStartAt] = useState(deep ? deepAt : 0);
+  const [peek, setPeek] = useState(deep);
+  const { phrases } = useAddedPhrases();
+  const yours = useMemo(() => {
+    const byStep = new Map<string, typeof phrases>();
+    for (const [rule, entries] of byRule(phrases)) {
+      const [lessonId, stepId] = rule.split("/");
+      if (lessonId === lesson.id) byStep.set(stepId, entries);
+    }
+    return byStep;
+  }, [phrases, lesson.id]);
   const [result, setResult] = useState<SessionResult | null>(null);
   const [planOpen, setPlanOpen] = useState(false);
 
@@ -56,6 +75,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
   const begin = (at: number) => {
     setPlanOpen(false);
+    setPeek(false);
     setStartAt(at);
     setStage("run");
     if (at === 0) dispatch({ t: "lesson", lessonId: lesson.id, stepIndex: 0 });
@@ -82,26 +102,32 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const onFinish = useCallback(
     (r: SessionResult) => {
       const accuracy = r.exercises ? r.firstTryCorrect / r.exercises : 1;
-      dispatch({ t: "lesson", lessonId: lesson.id, stepIndex: lesson.steps.length, completed: true, accuracy });
+      // A look from a deep link skipped the start: it doesn't finish the lesson.
+      if (!peek) dispatch({ t: "lesson", lessonId: lesson.id, stepIndex: lesson.steps.length, completed: true, accuracy });
       setResult(r);
       setStage("done");
       sfx.done();
     },
-    [dispatch, lesson],
+    [dispatch, lesson, peek],
   );
 
   return (
     <>
-      {stage === "run" ? (
+      {stage === "run" && peek && !ready ? (
+        // Answers need the progress store; it is usually there from the device at once.
+        <Splash />
+      ) : stage === "run" ? (
         <motion.div key="run" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <Session
-            items={items}
-            startAt={startAt}
-            planTitle={planTitle}
-            onAnswer={onAnswer}
-            onAdvance={onAdvance}
-            onFinish={onFinish}
-          />
+          <YourPhrasesContext value={yours}>
+            <Session
+              items={items}
+              startAt={startAt}
+              planTitle={planTitle}
+              onAnswer={onAnswer}
+              onAdvance={peek ? undefined : onAdvance}
+              onFinish={onFinish}
+            />
+          </YourPhrasesContext>
         </motion.div>
       ) : stage === "intro" ? (
         <motion.main

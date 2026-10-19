@@ -5,11 +5,10 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
-import { itemById } from "@/content/course";
 import { useOnline } from "@/lib/offline";
-import { dueItemIds } from "@/lib/stats";
 import type { SyncStatus } from "./progress/store";
-import { useProgress, useSyncStatus } from "./progress/provider";
+import { useSyncStatus } from "./progress/provider";
+import { useDueCount } from "./review-items";
 import { IconBook, IconCloud, IconCloudCheck, IconCloudOff, IconDevice, IconRepeat, IconTrain } from "./ui/icons";
 import { useT } from "@/lib/locale";
 
@@ -132,8 +131,7 @@ function useTyping() {
 
 function TabBar() {
   const path = usePathname();
-  const progress = useProgress();
-  const due = dueItemIds(progress).filter((id) => itemById.has(id)).length;
+  const due = useDueCount();
   const typing = useTyping();
   const t = useT();
 
