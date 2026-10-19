@@ -7,6 +7,7 @@ import { Match } from "@/components/exercises/match";
 import { Morph } from "@/components/exercises/morph";
 import { Teach } from "@/components/exercises/teach";
 import { TypeAnswer } from "@/components/exercises/type";
+import { YourPhrases } from "./your-phrases";
 import type { Phase, Verdict } from "@/components/exercises/types";
 
 export function StepView({
@@ -23,9 +24,19 @@ export function StepView({
   const p = { phase, setGrader, submit };
   switch (step.kind) {
     case "teach":
-      return <Teach step={step} />;
+      return (
+        <>
+          <Teach step={step} />
+          <YourPhrases stepId={step.id} />
+        </>
+      );
     case "morph":
-      return <Morph step={step} />;
+      return (
+        <>
+          <Morph step={step} />
+          <YourPhrases stepId={step.id} />
+        </>
+      );
     case "choice":
       return <Choice step={step} {...p} />;
     case "listen":
