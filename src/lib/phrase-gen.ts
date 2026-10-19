@@ -1,11 +1,13 @@
 import "server-only";
 import { put } from "@vercel/blob";
 import { generateText, Output } from "ai";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import manifest from "@/content/audio-manifest.json";
 import { db } from "@/db";
 import { addedPhrase } from "@/db/schema";
+import { ruleById, rules } from "@/content/rules";
+import { type Details, detailsSchema } from "./added-phrases";
 import { audioKey, plain } from "./text";
 import { forSpeech, LANGUAGE_CODE, MODEL_ID, OUTPUT_FORMAT, SEED, VOICE_ID, VOICE_SETTINGS } from "./voice";
 
@@ -68,6 +70,58 @@ async function draft(query: string) {
   return { it: clean(output.it), en: clean(output.en), say: clean(output.say), note: clean(output.note) || null };
 }
 
+const DESCRIBE = `You annotate entries in an Italian phrasebook. The learner is an English speaker who also speaks Spanish well, so Spanish is the bridge: much Italian is a sound rule away from a Spanish word they already know. They looked the entry up while travelling and want to learn from it, not just say it. Write all explanations in English.
+
+Decide what the entry is:
+- word: a single word, or a word with its article ("Il telefono", "La cultura", "Ricaricare", "Stanco"). Fill pos, forms and example.
+- phrase: anything longer, a question or a set expression ("Buon appetito!"). Fill parts and grammar.
+
+Fields:
+- forms: nouns ["il telefono", "i telefoni"] (singular and plural with articles). Verbs ["ricaricare", "io ricarico", "ho ricaricato"] (infinitive, io present, passato prossimo so the auxiliary shows). Adjectives ["stanco", "stanca", "stanchi", "stanche"]. Otherwise empty.
+- example: a short everyday sentence using the word that a traveller would really say or hear, with its English.
+- es: the Spanish equivalent, as short as the entry.
+- bridge: one short sentence (under 25 words) connecting it to Spanish: a real sound rule (‹noche› → «notte»), a false friend, or a gender or construction that differs. Only state etymology you are sure of; when the Spanish word is unrelated, say so and give a memory hook instead. Empty when there is nothing useful.
+- parts: the phrase split into chunks a learner can reuse, in order, each with a short English gloss: [{"it":"Dove","en":"where"},{"it":"posso","en":"can I"},{"it":"ricaricare","en":"charge"},{"it":"il telefono","en":"the phone"}]. Keep an article with its noun. Every word of the phrase appears in exactly one chunk, spelled as in the phrase.
+- grammar: the one structure in the phrase worth learning (posso + infinitive, ci vuole, the partitive, a reflexive, the passato prossimo with essere…), compared with Spanish when that helps. At most two sentences, under 40 words. Empty for a fixed expression with nothing to learn.
+- rule: the id of the course card below that teaches exactly the structure or sound rule this entry shows. A wrong link is worse than none: leave it empty unless the card's rule is plainly at work in this entry.
+
+Write Italian inside «» and Spanish inside ‹› in bridge and grammar, like «posso» and ‹puedo›.
+
+Course cards (id: lesson — card: the rule):
+${rules.map((r) => `${r.id}: ${r.lesson.title} — ${r.title}: ${r.gist}`).join("\n")}`;
+
+/** Word or phrase, and what it teaches. Null when the model fails: the entry still works without it. */
+export async function describe(p: { it: string; en: string }): Promise<Details | null> {
+  try {
+    const { output } = await generateText({
+      model: MODEL,
+      system: DESCRIBE,
+      prompt: `Entry: ${p.it}\nMeaning: ${p.en}`,
+      output: Output.object({ schema: detailsSchema }),
+      // Runs alongside the recording, so it can afford a little thought.
+      providerOptions: { gateway: { models: FALLBACK_MODELS }, openai: { reasoningEffort: "low" } },
+      maxRetries: 2,
+    });
+    const clean = (s: string) => s.replace(/\s+/g, " ").trim().normalize("NFC");
+    const word = output.kind === "word";
+    const example = { it: clean(output.example.it), en: clean(output.example.en) };
+    return {
+      kind: output.kind,
+      pos: word ? output.pos : "other",
+      forms: word ? output.forms.map(clean).filter(Boolean) : [],
+      es: plain(clean(output.es)),
+      bridge: clean(output.bridge),
+      example: word && example.it ? example : { it: "", en: "" },
+      parts: word ? [] : output.parts.map((x) => ({ it: clean(x.it), en: clean(x.en) })).filter((x) => x.it),
+      grammar: word ? "" : clean(output.grammar),
+      rule: ruleById.has(output.rule.trim()) ? output.rule.trim() : "",
+    };
+  } catch (e) {
+    console.error(`Describing "${p.it}" failed:`, e);
+    return null;
+  }
+}
+
 /** The phrase read in the app's voice, or null with no ElevenLabs key (the device voice plays it). */
 async function record(it: string): Promise<string | null> {
   const key = audioKey(it);
@@ -114,11 +168,34 @@ export async function generatePhrase(id: string, query: string) {
   try {
     const d = await draft(query);
     await set(id, { status: "recording", ...d });
-    const audioUrl = await record(d.it);
-    await set(id, { status: "ready", audioUrl, error: null });
+    // Described while it records, so it costs no extra wait.
+    const [audioUrl, details] = await Promise.all([record(d.it), describe(d)]);
+    await set(id, { status: "ready", audioUrl, details, error: null });
   } catch (e) {
     console.error(`Adding phrase "${query}" failed:`, e);
     const error = e instanceof UserFacingError ? e.message : "Something went wrong. Try again.";
     await set(id, { status: "failed", error }).catch(() => {});
   }
+}
+
+/** Rows being described by this instance, so overlapping loads don't ask twice. */
+const describing = new Set<string>();
+
+/** Fills in details for ready phrases added before entries had them, a few per call. */
+export async function describeMissing(rows: { id: string; it: string | null; en: string | null }[]) {
+  const todo = rows.filter((r) => r.it && !describing.has(r.id)).slice(0, 6);
+  todo.forEach((r) => describing.add(r.id));
+  await Promise.all(
+    todo.map(async (r) => {
+      const details = await describe({ it: r.it!, en: r.en ?? "" });
+      // Only if it is still the same entry: asking again rewrites the row.
+      if (details)
+        await db
+          .update(addedPhrase)
+          .set({ details })
+          .where(and(eq(addedPhrase.id, r.id), eq(addedPhrase.status, "ready"), eq(addedPhrase.it, r.it!), isNull(addedPhrase.details)))
+          .catch((e) => console.error(e));
+      describing.delete(r.id);
+    }),
+  );
 }

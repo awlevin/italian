@@ -1,0 +1,1 @@
+ALTER TABLE "added_phrase" ADD COLUMN "details" jsonb;

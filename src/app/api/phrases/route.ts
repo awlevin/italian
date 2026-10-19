@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { addedPhrase } from "@/db/schema";
 import { addPhraseSchema, type AddedPhrase, isPending, STALE_MS } from "@/lib/added-phrases";
 import { currentUserId } from "@/lib/auth";
-import { generatePhrase } from "@/lib/phrase-gen";
+import { describeMissing, generatePhrase } from "@/lib/phrase-gen";
 import { fold } from "@/lib/text";
 
 /** Long enough for the model and the recording, which run after the response. */
@@ -27,6 +27,7 @@ function toPhrase(r: Row): AddedPhrase {
     note: r.note ?? undefined,
     audioUrl: r.audioUrl,
     error: stale ? "That took too long. Try again." : r.error,
+    details: r.details,
     createdAt: r.createdAt.toISOString(),
   };
 }
@@ -45,6 +46,9 @@ export async function GET() {
     .where(or(ne(addedPhrase.status, "failed"), eq(addedPhrase.createdBy, userId)))
     .orderBy(desc(addedPhrase.createdAt))
     .limit(500);
+  // Phrases added before entries had details get them in the background; the next load shows them.
+  const undescribed = rows.filter((r) => r.status === "ready" && !r.details);
+  if (undescribed.length) after(() => describeMissing(undescribed));
   return json({ phrases: rows.map(toPhrase) });
 }
 
@@ -75,7 +79,7 @@ export async function POST(req: Request) {
   if (n >= DAILY_LIMIT) return json({ error: "limit", message: "That's a lot of new phrases for one day. Try again tomorrow." }, 429);
 
   const now = new Date();
-  const fresh = { query, status: "translating" as const, it: null, en: null, say: null, note: null, audioUrl: null, error: null, createdBy: userId, updatedAt: now };
+  const fresh = { query, status: "translating" as const, it: null, en: null, say: null, note: null, audioUrl: null, error: null, details: null, createdBy: userId, updatedAt: now };
   const [row] = existing
     ? await db.update(addedPhrase).set(fresh).where(eq(addedPhrase.id, existing.id)).returning()
     : await db
