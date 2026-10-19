@@ -25,6 +25,9 @@ import { byRule } from "@/lib/phrase-cards";
 
 type Stage = "intro" | "run" | "done";
 
+/** Where a rule link may send the learner back to. */
+const BACK = ["/phrasebook", "/review"] as const;
+
 export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const ready = useProgressReady();
   const t = useT();
@@ -36,8 +39,8 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   // It is a look at one card, so it never moves the saved seat.
   const params = useSearchParams();
   const stepParam = params.get("step");
-  // Only a path in this app: never another origin.
-  const back = /^\/(?!\/)/.test(params.get("back") ?? "") ? params.get("back")! : undefined;
+  // Only the screens that link here: never a URL from outside.
+  const back = BACK.find((b) => b === params.get("back"));
   const [deepAt] = useState(() => (stepParam ? lesson.steps.findIndex((s) => s.id === stepParam) : -1));
   const deep = deepAt >= 0;
   const [stage, setStage] = useState<Stage>(deep ? "run" : "intro");
@@ -94,9 +97,11 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   }));
 
   const onAnswer = useCallback(
-    (item: SessionItem, correct: boolean) =>
-      dispatch({ t: "answer", itemId: itemId(lesson.id, item.step.id), correct }),
-    [dispatch, lesson.id],
+    (item: SessionItem, correct: boolean) => {
+      // A look ahead doesn't schedule cards from a lesson that hasn't been taught yet.
+      if (!peek) dispatch({ t: "answer", itemId: itemId(lesson.id, item.step.id), correct });
+    },
+    [dispatch, lesson.id, peek],
   );
   const onAdvance = useCallback(
     (stepIndex: number) => dispatch({ t: "lesson", lessonId: lesson.id, stepIndex }),
@@ -104,14 +109,19 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   );
   const onFinish = useCallback(
     (r: SessionResult) => {
+      // A look from a deep link skipped the start: it doesn't finish the lesson. Back to where it came from.
+      if (peek) {
+        if (back) return router.push(back);
+        setPeek(false);
+        return setStage("intro");
+      }
       const accuracy = r.exercises ? r.firstTryCorrect / r.exercises : 1;
-      // A look from a deep link skipped the start: it doesn't finish the lesson.
-      if (!peek) dispatch({ t: "lesson", lessonId: lesson.id, stepIndex: lesson.steps.length, completed: true, accuracy });
+      dispatch({ t: "lesson", lessonId: lesson.id, stepIndex: lesson.steps.length, completed: true, accuracy });
       setResult(r);
       setStage("done");
       sfx.done();
     },
-    [dispatch, lesson, peek],
+    [dispatch, lesson, peek, back, router],
   );
 
   return (

@@ -42,14 +42,27 @@ function subscribe(fn: () => void) {
 }
 
 let poll: ReturnType<typeof setTimeout> | undefined;
+/** Mounted screens using the list. */
+let users = 0;
+const onVisible = () => document.visibilityState === "visible" && void load();
+/** One load at a time, however many screens ask. */
+let loading: Promise<void> | null = null;
+/** Bumped by every local change, so a load that started before it can't undo it. */
+let generation = 0;
 
-async function load() {
-  clearTimeout(poll);
-  try {
-    const res = await fetch("/api/phrases", { cache: "no-store", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-    if (res.ok) set(((await res.json()) as { phrases: AddedPhrase[] }).phrases);
-  } catch {} // Offline or timed out: keep what is saved, and try again below.
-  if (listeners.size && list?.some((p) => isPending(p) || p.describing)) poll = setTimeout(() => void load(), POLL_MS);
+function load() {
+  return (loading ??= (async () => {
+    clearTimeout(poll);
+    const gen = generation;
+    try {
+      const res = await fetch("/api/phrases", { cache: "no-store", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      const body = res.ok ? ((await res.json()) as { phrases: AddedPhrase[] }) : null;
+      if (body && gen === generation) set(body.phrases);
+    } catch {} // Offline or timed out: keep what is saved, and try again below.
+    loading = null;
+    if (gen !== generation) return void load();
+    if (users && list?.some((p) => isPending(p) || p.describing)) poll = setTimeout(() => void load(), POLL_MS);
+  })());
 }
 
 export class AddError extends Error {}
@@ -70,12 +83,14 @@ async function add(query: string) {
   const body = (await res.json().catch(() => ({}))) as { phrase?: AddedPhrase; message?: string };
   if (!res.ok || !body.phrase) throw new AddError(body.message ?? "failed");
   const phrase = body.phrase;
+  generation++;
   set([phrase, ...(list ?? []).filter((p) => p.id !== phrase.id)]);
   if (isPending(phrase) || phrase.describing) void load();
 }
 
 /** Takes a phrase out for everyone. */
 async function remove(id: string) {
+  generation++;
   set((list ?? []).filter((p) => p.id !== id));
   await fetch(`/api/phrases/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => {});
 }
@@ -84,10 +99,12 @@ export function useAddedPhrases() {
   const phrases = useSyncExternalStore(subscribe, () => list ?? EMPTY, () => EMPTY);
 
   useEffect(() => {
+    // Every screen that opens refreshes the list; the polling and the
+    // visibility listener belong to all of them, so the last one out stops them.
+    if (users++ === 0) document.addEventListener("visibilitychange", onVisible);
     void load();
-    const onVisible = () => document.visibilityState === "visible" && void load();
-    document.addEventListener("visibilitychange", onVisible);
     return () => {
+      if (--users > 0) return;
       document.removeEventListener("visibilitychange", onVisible);
       clearTimeout(poll);
     };
