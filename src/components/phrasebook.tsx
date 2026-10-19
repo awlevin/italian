@@ -1,45 +1,158 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { phrasebook } from "@/content/phrasebook";
+import { ruleById, ruleHref } from "@/content/rules";
 import type { Phrase } from "@/content/types";
-import { ADDED_GROUP, type AddedPhrase } from "@/lib/added-phrases";
+import { ADDED_GROUP, type AddedPhrase, type Details, isPending, kindOf, WORDS_GROUP } from "@/lib/added-phrases";
 import { speak, stop } from "@/lib/audio";
 import { fold } from "@/lib/text";
 import { AddError, useAddedPhrases } from "./added-phrases";
 import { useDispatch, useProgress } from "./progress/provider";
-import { IconChevronDown, IconPlus, IconRotate, IconSearch, IconStar, IconTrash, IconX } from "./ui/icons";
+import { IconArrowRight, IconBridge, IconChevronDown, IconLightbulb, IconPlus, IconRotate, IconSearch, IconStar, IconTrash, IconX } from "./ui/icons";
+import { Rich } from "./ui/rich";
 import { SpeakButton } from "./ui/speak-button";
 import { useT } from "@/lib/locale";
 
 const builtIn = phrasebook.flatMap((g) => g.phrases.map((p) => [p.id, p] as const));
 const EASE = [0.22, 1, 0.36, 1] as const;
+/** Your own groups show this many until opened, so Saved and the rest stay close. */
+const PEEK = 5;
+
+const POS = { noun: "noun", verb: "verb", adjective: "adj.", adverb: "adv.", other: "" } as const;
+
+const Eyebrow = ({ children }: { children: React.ReactNode }) => (
+  <span className="mr-1.5 font-mono text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">{children}</span>
+);
+
+/** Small Italian chips that play when tapped: a word's forms, or a phrase's building blocks. */
+function Chips({ items }: { items: { it: string; en?: string }[] }) {
+  return (
+    <ul className="flex flex-wrap gap-1.5">
+      {items.map((x, i) => (
+        <li key={i}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              speak(x.it);
+            }}
+            aria-label={`Play “${x.it}”`}
+            className="flex min-h-11 flex-col items-start justify-center rounded-xl border border-line bg-card px-3 py-1.5 text-left transition-colors active:bg-paper-2"
+          >
+            <span lang="it" className="text-[15px] leading-tight font-semibold text-ink">
+              {x.it}
+            </span>
+            {x.en && <span className="text-[12px] leading-tight text-ink-3">{x.en}</span>}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** What an added entry teaches: its forms or parts, the Spanish bridge, the grammar and the lesson behind it. */
+function Learn({ d }: { d: Details }) {
+  const t = useT();
+  const rule = d.rule ? ruleById.get(d.rule) : undefined;
+  return (
+    <>
+      {d.kind === "word" && d.forms.length > 1 && <Chips items={d.forms.map((it) => ({ it }))} />}
+      {d.kind === "phrase" && d.parts.length > 1 && <Chips items={d.parts} />}
+      {d.kind === "word" && d.example.it && (
+        <div className="flex items-center gap-2.5 rounded-xl bg-paper-2/70 py-2 pr-3 pl-2">
+          <SpeakButton text={d.example.it} size="sm" label={`Play “${d.example.it}”`} />
+          <div className="min-w-0">
+            <p lang="it" className="text-[15px] leading-snug text-ink">
+              {d.example.it}
+            </p>
+            <p className="text-[13px] leading-snug text-ink-3">{d.example.en}</p>
+          </div>
+        </div>
+      )}
+      {(d.es || d.bridge) && (
+        <p className="flex gap-2 text-[14px] leading-snug text-ink-2">
+          <IconBridge size={16} className="mt-0.5 shrink-0 text-bridge" />
+          <span>
+            {d.es && (
+              <span className="font-medium text-bridge italic" lang="es">
+                {d.es}
+                {d.bridge && " — "}
+              </span>
+            )}
+            {d.bridge && <Rich text={d.bridge} />}
+          </span>
+        </p>
+      )}
+      {d.grammar && (
+        <p className="flex gap-2 text-[14px] leading-snug text-ink-2">
+          <IconLightbulb size={16} className="mt-0.5 shrink-0 text-mark" />
+          <span>
+            <Rich text={d.grammar} />
+          </span>
+        </p>
+      )}
+      {rule && (
+        <Link
+          href={ruleHref(rule)}
+          onClick={(e) => e.stopPropagation()}
+          className="flex min-h-11 items-center gap-3 rounded-xl border border-line bg-card px-3 py-2 transition-colors active:bg-paper-2"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="font-mono text-[10px] font-bold tracking-[0.16em] text-accent uppercase">
+              {t("The rule", "La regola")} · {rule.lesson.city}
+            </p>
+            <p className="truncate text-[15px] leading-snug font-semibold text-ink">{rule.title}</p>
+          </div>
+          <IconArrowRight size={18} className="shrink-0 text-ink-3" />
+        </Link>
+      )}
+    </>
+  );
+}
 
 function Row({
   p,
   starred,
   onShow,
   onRemove,
+  details,
+  fresh = false,
 }: {
   p: Phrase;
   starred: boolean;
   onShow: (p: Phrase) => void;
   /** Added phrases can be taken out again. */
   onRemove?: () => void;
+  /** What an added entry teaches, shown when it opens. */
+  details?: Details | null;
+  /** Just finished adding: it glows once so the eye finds it. */
+  fresh?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const pos = details?.kind === "word" ? POS[details.pos] : "";
   const dispatch = useDispatch();
   const toggle = () => setOpen((o) => !o);
   return (
-    <li>
+    <li className="relative">
+      {fresh && (
+        <motion.span
+          aria-hidden
+          className="pointer-events-none absolute -inset-x-2 inset-y-0.5 rounded-xl bg-mark-soft"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: 2.2, delay: 0.6, ease: "easeOut" }}
+        />
+      )}
       <div
         role="button"
         tabIndex={0}
         aria-expanded={open}
         onClick={toggle}
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), toggle())}
-        className="group -mx-2 flex cursor-pointer items-center gap-3 rounded-xl px-2 py-3 transition-colors select-none active:bg-paper-2"
+        className="group relative -mx-2 flex cursor-pointer items-center gap-3 rounded-xl px-2 py-3 transition-colors select-none active:bg-paper-2"
       >
         {/* The pseudo-element grows the 32px button to a 44px tap target. */}
         <SpeakButton text={p.it} size="sm" className="before:absolute before:-inset-1.5 before:content-['']" label={`Play “${p.it}”`} />
@@ -48,7 +161,10 @@ function Row({
             {p.it}
             {starred && <IconStar size={13} filled className="ml-1.5 inline -translate-y-px text-mark" />}
           </p>
-          <p className="text-[14px] leading-snug text-ink-2">{p.en}</p>
+          <p className="text-[14px] leading-snug text-ink-2">
+            {p.en}
+            {pos && <span className="ml-2 font-mono text-[10px] font-bold tracking-[0.12em] text-ink-3 uppercase">{pos}</span>}
+          </p>
         </div>
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25, ease: EASE }} className="shrink-0 text-ink-3">
           <IconChevronDown size={18} />
@@ -65,9 +181,10 @@ function Row({
           >
             <div className="space-y-3 pb-4 pl-11">
               <p className="font-mono text-[13px] leading-relaxed text-ink-2">
-                <span className="mr-1.5 text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">Say</span>
+                <Eyebrow>Say</Eyebrow>
                 {p.say}
               </p>
+              {details && <Learn d={details} />}
               {p.note && <p className="text-[14px] leading-snug text-ink-2">{p.note}</p>}
               <div className="flex gap-2">
                 <motion.button
@@ -520,11 +637,13 @@ export function Phrasebook() {
     const ready = added.phrases.filter((p) => p.status === "ready");
     const byId = new Map<string, Phrase>([...builtIn, ...ready.map((p) => [p.id, p] as const)]);
     const saved = progress.starred.map((id) => byId.get(id)).filter((p): p is Phrase => !!p);
-    // Newest first, so a phrase just added sits at the top of its group.
-    const mine: Phrase[] = added.phrases;
+    // Yours first and newest first, so a phrase just added is the first thing on the page.
+    const phrases = added.phrases.filter((p) => kindOf(p) === "phrase");
+    const words = added.phrases.filter((p) => kindOf(p) === "word");
     const all = [
+      ...(phrases.length ? [{ id: ADDED_GROUP, title: "Your phrases", it: "Frasi", phrases: phrases as Phrase[] }] : []),
+      ...(words.length ? [{ id: WORDS_GROUP, title: "Your words", it: "Parole", phrases: words as Phrase[] }] : []),
       ...(saved.length ? [{ id: "saved", title: "Saved", it: t("Saved", "Preferiti"), phrases: saved }] : []),
-      ...(mine.length ? [{ id: ADDED_GROUP, title: "From your searches", it: t("Added", "Aggiunte"), phrases: mine }] : []),
       ...phrasebook,
     ];
     if (!query) return all;
@@ -535,6 +654,21 @@ export function Phrasebook() {
       .map((g) => ({ ...g, phrases: g.phrases.filter((p) => fold(text(p)).includes(query)) }))
       .filter((g) => g.phrases.length);
   }, [added.phrases, addedById, progress.starred, query, t]);
+  const [opened, setOpened] = useState<Set<string>>(() => new Set());
+
+  // Phrases seen on their way in: when one turns ready it glows once.
+  const [fresh, setFresh] = useState<Set<string>>(() => new Set());
+  const waiting = useRef(new Set<string>());
+  useEffect(() => {
+    const done = added.phrases.filter((p) => p.status === "ready" && waiting.current.has(p.id));
+    added.phrases.forEach((p) => isPending(p) && waiting.current.add(p.id));
+    if (!done.length) return;
+    done.forEach((p) => waiting.current.delete(p.id));
+    const ids = done.map((p) => p.id);
+    setFresh((f) => new Set([...f, ...ids]));
+    // Once only: a row that remounts later (search, Show all) doesn't glow again.
+    setTimeout(() => setFresh((f) => new Set([...f].filter((id) => !ids.includes(id)))), 3000);
+  }, [added.phrases]);
   // Offer to add the search unless it was already asked for.
   const asked = !!query && added.phrases.some((p) => fold(p.query) === query);
 
@@ -594,6 +728,7 @@ export function Phrasebook() {
                     <span className="absolute inset-0 rounded-full border border-line bg-card" />
                   )}
                   {g.id === "saved" && <IconStar size={13} filled className="relative text-mark" />}
+                  {(g.id === ADDED_GROUP || g.id === WORDS_GROUP) && <span className="relative size-1.5 rounded-full bg-accent" />}
                   <span className="relative">{g.it}</span>
                 </button>
               );
@@ -603,40 +738,57 @@ export function Phrasebook() {
       </div>
 
       <div className="space-y-7 pt-2">
-        {groups.map((g) => (
-          <section key={g.id} id={g.id}>
-            <h2 className="flex items-baseline gap-2 border-b border-line pb-2">
-              <span className="font-display text-[24px] italic">{g.it}</span>
-              <span className="text-[13px] text-ink-3">{g.title}</span>
-              {query && <span className="ml-auto font-mono text-[11px] font-bold text-ink-3">{g.phrases.length}</span>}
-            </h2>
-            <ul className="divide-y divide-line/60">
-              <AnimatePresence initial={false}>
-                {g.phrases.map((p) => {
-                  const a = addedById.get(p.id);
-                  if (a && a.status !== "ready")
+        {groups.map((g) => {
+          const mine = g.id === ADDED_GROUP || g.id === WORDS_GROUP;
+          const capped = mine && !query && !opened.has(g.id) && g.phrases.length > PEEK + 1;
+          const shown = capped ? g.phrases.slice(0, PEEK) : g.phrases;
+          return (
+            <section key={g.id} id={g.id}>
+              <h2 className="flex items-baseline gap-2 border-b border-line pb-2">
+                <span className="font-display text-[24px] italic">{g.it}</span>
+                <span className="text-[13px] text-ink-3">{g.title}</span>
+                {(query || mine) && <span className="ml-auto font-mono text-[11px] font-bold text-ink-3">{g.phrases.length}</span>}
+              </h2>
+              <ul className="divide-y divide-line/60">
+                <AnimatePresence initial={false}>
+                  {shown.map((p) => {
+                    const a = addedById.get(p.id);
+                    if (a && a.status !== "ready")
+                      return (
+                        <PendingRow
+                          key={`${g.id}-${p.id}`}
+                          p={a}
+                          onRetry={() => void added.add(a.query).catch(() => {})}
+                          onDismiss={() => void added.remove(a.id)}
+                        />
+                      );
                     return (
-                      <PendingRow
+                      <Row
                         key={`${g.id}-${p.id}`}
-                        p={a}
-                        onRetry={() => void added.add(a.query).catch(() => {})}
-                        onDismiss={() => void added.remove(a.id)}
+                        p={p}
+                        starred={starred.has(p.id)}
+                        onShow={setShowing}
+                        onRemove={a && mine ? () => void added.remove(a.id) : undefined}
+                        details={a?.details}
+                        fresh={mine && fresh.has(p.id)}
                       />
                     );
-                  return (
-                    <Row
-                      key={`${g.id}-${p.id}`}
-                      p={p}
-                      starred={starred.has(p.id)}
-                      onShow={setShowing}
-                      onRemove={a && g.id === ADDED_GROUP ? () => void added.remove(a.id) : undefined}
-                    />
-                  );
-                })}
-              </AnimatePresence>
-            </ul>
-          </section>
-        ))}
+                  })}
+                </AnimatePresence>
+              </ul>
+              {capped && (
+                <button
+                  type="button"
+                  onClick={() => setOpened((o) => new Set([...o, g.id]))}
+                  className="mt-1 flex h-11 w-full items-center justify-center gap-1.5 rounded-xl text-[14px] font-semibold text-accent transition-colors active:bg-paper-2"
+                >
+                  {t(`Show all ${g.phrases.length}`, `Mostra tutte (${g.phrases.length})`)}
+                  <IconChevronDown size={16} />
+                </button>
+              )}
+            </section>
+          );
+        })}
         {query && !asked && <AddPrompt key={query} q={q.trim()} empty={groups.length === 0} onAdd={added.add} />}
       </div>
 

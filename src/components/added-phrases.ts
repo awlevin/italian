@@ -49,7 +49,7 @@ async function load() {
     const res = await fetch("/api/phrases", { cache: "no-store", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     if (res.ok) set(((await res.json()) as { phrases: AddedPhrase[] }).phrases);
   } catch {} // Offline or timed out: keep what is saved, and try again below.
-  if (listeners.size && list?.some(isPending)) poll = setTimeout(() => void load(), POLL_MS);
+  if (listeners.size && list?.some((p) => isPending(p) || p.describing)) poll = setTimeout(() => void load(), POLL_MS);
 }
 
 export class AddError extends Error {}
@@ -71,7 +71,7 @@ async function add(query: string) {
   if (!res.ok || !body.phrase) throw new AddError(body.message ?? "failed");
   const phrase = body.phrase;
   set([phrase, ...(list ?? []).filter((p) => p.id !== phrase.id)]);
-  if (isPending(phrase)) void load();
+  if (isPending(phrase) || phrase.describing) void load();
 }
 
 /** Takes a phrase out for everyone. */

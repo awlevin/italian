@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { reduce } from "@/components/progress/store";
+import { ruleById, rules } from "@/content/rules";
+import { kindOf } from "@/lib/added-phrases";
 import { charDiff } from "@/lib/diff";
 import { applyAnswer, BOX_MINUTES, MAX_BOX } from "@/lib/srs";
 import { streak } from "@/lib/stats";
@@ -88,5 +90,31 @@ describe("audioKey", () => {
   it("is stable and ignores markup", () => {
     expect(audioKey("«Buongiorno»")).toBe(audioKey("Buongiorno"));
     expect(audioKey("Buongiorno")).not.toBe(audioKey("Buonasera"));
+  });
+});
+
+describe("kindOf", () => {
+  const ready = (it: string) => ({ it, query: it, status: "ready" as const });
+  it("guesses from the text until the entry is described", () => {
+    expect(kindOf(ready("Telefono"))).toBe("word");
+    expect(kindOf(ready("La cultura"))).toBe("word");
+    expect(kindOf(ready("Dov'è?"))).toBe("phrase");
+    expect(kindOf(ready("Il conto per favore"))).toBe("phrase");
+    expect(kindOf({ it: "charge my phone", query: "charge my phone", status: "translating" })).toBe("phrase");
+  });
+  it("trusts the details once there", () => {
+    const details = { kind: "phrase" as const, pos: "other" as const, forms: [], es: "", bridge: "", example: { it: "", en: "" }, parts: [], grammar: "", rule: "" };
+    expect(kindOf({ ...ready("Buon appetito"), details })).toBe("phrase");
+  });
+});
+
+describe("rules", () => {
+  it("are unique and point at teaching cards", () => {
+    expect(ruleById.size).toBe(rules.length);
+    for (const r of rules) {
+      const step = r.lesson.steps.find((s) => s.id === r.stepId);
+      expect(step?.kind === "teach" || step?.kind === "morph").toBe(true);
+      expect(r.gist).not.toBe("");
+    }
   });
 });
