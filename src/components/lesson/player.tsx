@@ -26,7 +26,7 @@ import { byRule } from "@/lib/phrase-cards";
 type Stage = "intro" | "run" | "done";
 
 /** Where a rule link may send the learner back to. */
-const BACK = ["/phrasebook", "/review"] as const;
+const BACK = ["/phrasebook", "/phrasebook/grammar", "/review"] as const;
 
 export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const ready = useProgressReady();

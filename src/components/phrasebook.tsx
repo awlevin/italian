@@ -690,6 +690,10 @@ export function Phrasebook() {
       <div className="space-y-1.5 pb-4">
         <h1 className="font-display-wonk text-[44px] leading-none tracking-[-0.03em]">{t("Phrasebook", "Frasario")}</h1>
         <p className="text-[16px] text-ink-2">The phrases you will actually use. Tap one for how to say it.</p>
+        <Link href="/phrasebook/grammar" className="inline-flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-accent">
+          {t("Grammar tables: pronouns and every tense", "Tabelle di grammatica: pronomi e tempi")}
+          <IconArrowRight size={15} className="shrink-0" />
+        </Link>
       </div>
 
       <div

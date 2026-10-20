@@ -8,7 +8,9 @@
 import { readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { course } from "../src/content/course";
+import { grammar } from "../src/content/grammar";
 import { phrasebook } from "../src/content/phrasebook";
+import { ruleById } from "../src/content/rules";
 import { trip } from "../src/content/trip";
 import type { Lesson, Step, Table } from "../src/content/types";
 import { fold, MARKUP } from "../src/lib/text";
@@ -266,6 +268,22 @@ for (const g of phrasebook) {
     checkPlain(`${at}.say`, p.say);
     checkPlain(`${at}.note`, p.note);
   }
+}
+
+// ── Grammar reference ────────────────────────────────────────────────────────
+const sectionIds = new Set<string>();
+for (const g of grammar) {
+  const at = `grammar/${g.id}`;
+  if (sectionIds.has(g.id)) fail(at, "duplicate section id");
+  sectionIds.add(g.id);
+  if (!KEBAB.test(g.id)) fail(at, "section id is not kebab-case");
+  checkPlain(`${at}.it`, g.it);
+  checkPlain(`${at}.title`, g.title);
+  checkRich(`${at}.body`, g.body);
+  if (!g.tables.length) fail(at, "no tables");
+  g.tables.forEach((t, i) => checkTable(`${at}.tables[${i}]`, t));
+  g.notes?.forEach((n, i) => checkRich(`${at}.notes[${i}]`, n));
+  if (g.rule && !ruleById.has(g.rule)) fail(at, `rule "${g.rule}" is not a teach or morph card`);
 }
 
 // ── Report ───────────────────────────────────────────────────────────────────

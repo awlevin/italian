@@ -1,6 +1,7 @@
 import { lesson as amalfi } from "./lessons/amalfi";
 import { lesson as bologna } from "./lessons/bologna";
 import { lesson as firenze } from "./lessons/firenze";
+import { lesson as lecce } from "./lessons/lecce";
 import { lesson as milano } from "./lessons/milano";
 import { lesson as napoli } from "./lessons/napoli";
 import { lesson as palermo } from "./lessons/palermo";
@@ -12,7 +13,7 @@ import { trip } from "./trip";
 import { isExercise, type ExerciseStep, type Lesson } from "./types";
 
 /** The grammar course, north to south. Order is the suggested path, not a lock. */
-export const course: Lesson[] = [milano, verona, venezia, bologna, firenze, siena, roma, napoli, amalfi, palermo];
+export const course: Lesson[] = [milano, verona, venezia, bologna, firenze, siena, roma, napoli, amalfi, lecce, palermo];
 
 export type LineId = "corso" | "viaggio";
 

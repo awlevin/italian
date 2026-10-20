@@ -4,6 +4,7 @@
  * check-audio so the two never disagree.
  */
 import { allLessons } from "../src/content/course";
+import { grammar } from "../src/content/grammar";
 import { phrasebook } from "../src/content/phrasebook";
 import type { Step } from "../src/content/types";
 import { audioKey, MARKUP, plain, sayable } from "../src/lib/text";
@@ -86,6 +87,8 @@ export function collectAudioStrings(): AudioString[] {
       for (const s of strings(p)) for (const it of spans(s)) add(it, `phrasebook/${p.id} «»`);
     }
   }
+
+  for (const g of grammar) for (const s of strings(g)) for (const it of spans(s)) add(it, `grammar/${g.id} «»`);
 
   return [...byKey.values()].sort((a, b) => a.key.localeCompare(b.key));
 }
