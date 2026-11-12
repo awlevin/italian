@@ -19,32 +19,32 @@
     "screenshots": "tsx assets/brand/screenshots.ts"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.9.15",
+    "@clerk/nextjs": "^7.9.25",
     "@neondatabase/serverless": "^1.2.0",
     "@vercel/blob": "^2.8.2",
     "ai": "^6.0.309",
     "drizzle-orm": "^0.45.4",
-    "motion": "^14.3.0",
-    "next": "16.4.1",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "motion": "^14.10.1",
+    "next": "16.4.5",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "server-only": "^0.0.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.1",
+    "@playwright/test": "^1.65.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "dotenv": "^18.0.8",
+    "dotenv": "^18.0.9",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
-    "eslint-config-next": "16.4.1",
+    "eslint-config-next": "16.4.5",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   },
   "packageManager": "pnpm@10.34.5"
 }
